@@ -12,7 +12,7 @@ function filterOpts(opts){
             return {};
         }
     }
-    if (type === 'Object'){
+    if (type !== 'Object'){
         return {};
     }
     var o = {};
