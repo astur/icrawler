@@ -13,6 +13,7 @@ function filterOpts(opts){
     if (opts.read_timeout) {o._.read_timeout = opts.read_timeout;}
     if (opts.proxy) {o._.proxy = opts.proxy;}
     if (opts.headers) {o._.headers = opts.headers;}
+    if (opts.cookieSource) {o._.cookies = {};}
     if (opts.cookies) {o._.cookies = opts.cookies;}
     if (opts.connection) {o._.connection = opts.connection;}
     if (opts.user_agent) {o._.user_agent = opts.user_agent;}
@@ -30,7 +31,11 @@ module.exports = function(startURL, opts, parse, done){
         needle.get(url, opts._, function(err, res){
             if (!err && res.statusCode === 200) {
                 if (opts.cookieSource && url === opts.cookieSource) {
-                    opts._.cookies = res.cookies;
+                    for (var key in res.cookies){
+                        if (!/^__utm/.test(res.cookies[key])){
+                            opts._.cookies[key] = res.cookies[key];
+                        }
+                    }
                 } else {
                     parse(url, cheerio.load(res.body), {
                         push: q.push,
