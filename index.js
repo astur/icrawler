@@ -4,17 +4,7 @@ var async = require('async');
 var caba = require('caba')();
 
 function filterOpts(opts){
-    var type = Object.prototype.toString.call( [] ).slice(8,-1);
-    if (type === 'String'){
-        try {
-            opts = JSON.parse(opts);
-        } catch(e) {
-            return {};
-        }
-    }
-    if (type !== 'Object'){
-        return {};
-    }
+    opts = Object.prototype.toString.call(opts).slice(8,-1) === 'Object' ? opts : {};
     var o = {};
     if(opts.cookieSource){o.cookieSource = opts.cookieSource;}
     o.delay = opts.delay || 10000;
