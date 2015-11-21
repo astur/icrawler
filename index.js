@@ -5,9 +5,19 @@ var caba = require('caba')();
 
 function filterOpts(opts){
     opts = Object.prototype.toString.call(opts).slice(8,-1) === 'Object' ? opts : {};
-    var o = {};
+    var o = {_: {}};
     if(opts.cookieSource){o.cookieSource = opts.cookieSource;}
     o.delay = opts.delay || 10000;
+
+    if (opts.open_timeout || opts.timeout) {o._.open_timeout = opts.open_timeout || opts.timeout;}
+    if (opts.read_timeout) {o._.read_timeout = opts.read_timeout;}
+    if (opts.proxy) {o._.proxy = opts.proxy;}
+    if (opts.headers) {o._.headers = opts.headers;}
+    if (opts.cookies) {o._.cookies = opts.cookies;}
+    if (opts.connection) {o._.connection = opts.connection;}
+    if (opts.user_agent) {o._.user_agent = opts.user_agent;}
+    if (opts.decode_response === false) {o._.decode_response = false;}
+
     return o;
 }
 
@@ -17,10 +27,10 @@ module.exports = function(startURL, opts, parse, done){
     caba.start('%s results found');
 
     var q = async.queue(function(url, cb){
-        needle.get(url, opts, function(err, res){
+        needle.get(url, opts._, function(err, res){
             if (!err && res.statusCode === 200) {
                 if (opts.cookieSource && url === opts.cookieSource) {
-                    opts.cookies = res.cookies;
+                    opts._.cookies = res.cookies;
                 } else {
                     parse(url, cheerio.load(res.body), {
                         push: q.push,
