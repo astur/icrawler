@@ -45,7 +45,9 @@ module.exports = function(startURL, opts, parse, done){
                     q.pause();
                     caba.log('Paused!', new Date());
                     setTimeout(function(){
-                        q.unshift(opts.cookieSource);
+                        if (opts.cookieSource) {
+                            q.unshift(opts.cookieSource);
+                        }
                         q.resume();
                         caba.log('Resumed!', new Date());
                     }, opts.delay);
