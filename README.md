@@ -34,6 +34,7 @@ icrawler(startURL, opts, parse, done);
       - `_.save(item)` - adds parsed item to results array
       - `_.step()` - increment indicator
       - `_.log(message /*, ... */)` - safe logging (use it instead `console.log`)
+    - `res` (optional) - full response object (`needle` powered).
 - **`done`** - `function(result)`, that runs once with result of crawling/parsing
 
 ## Example

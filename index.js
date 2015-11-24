@@ -42,7 +42,7 @@ module.exports = function(startURL, opts, parse, done){
                         save: function(v){result.push(v);},
                         step: caba.step,
                         log: caba.log
-                    });
+                    }, res);
                 }
             } else {
                 caba.log('Error:', url);
