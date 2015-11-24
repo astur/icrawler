@@ -17,6 +17,7 @@ icrawler(startURL, opts, parse, done);
 - **`startURL`** - URL of page for start crawling
 - **`opts`** (optional) - options:
     - `cookieSource` - URL to get cookies from. It's possible to use RFC-1738 basic auth like this: `'http://user:pass@server.com'`
+    - `concurrency` - number of parallel requests. Defaults to 1. If `cookieSource` set - `concurrency` option will ignored.
     - `delay` - time in milisecs to wait on error before try to crawle again. Defaults to 10000 (10 secs).
     - `decode_response` - (or decode) Whether to decode the text responses to UTF-8, if Content-Type header shows a different charset. Defaults to true.
     - `open_timeout` (or `timeout`) - Returns error if connection takes longer than X milisecs to establish. Defaults to 10000 (10 secs). 0 means no timeout.

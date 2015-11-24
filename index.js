@@ -6,6 +6,7 @@ var caba = require('caba')();
 function filterOpts(opts){
     opts = Object.prototype.toString.call(opts).slice(8,-1) === 'Object' ? opts : {};
     var o = {_: {}};
+    o.concurrency = (opts.concurrency && !opts.cookieSource)? opts.concurrency : 1;
     if(opts.cookieSource){o.cookieSource = opts.cookieSource;}
     o.delay = opts.delay || 10000;
 
@@ -71,7 +72,7 @@ module.exports = function(startURL, opts, parse, done){
             }
             cb();
         });
-    });
+    }, opts.concurrency);
 
     q.drain = function(){
         caba.finish();
