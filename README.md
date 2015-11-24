@@ -15,7 +15,7 @@ icrawler(startURL, opts, parse, done);
 ```
 
 - **`startURL`** - URL of page for start crawling
-- **`opts`** - options (is not optional yet)
+- **`opts`** (optional) - options:
     - `cookieSource` - URL to get cookies from. It's possible to use RFC-1738 basic auth like this: `'http://user:pass@server.com'`
     - `delay` - time in milisecs to wait on error before try to crawle again. Defaults to 10000 (10 secs).
     - `decode_response` - (or decode) Whether to decode the text responses to UTF-8, if Content-Type header shows a different charset. Defaults to true.
@@ -35,7 +35,7 @@ icrawler(startURL, opts, parse, done);
       - `_.step()` - increment indicator
       - `_.log(message /*, ... */)` - safe logging (use it instead `console.log`)
     - `res` (optional) - full response object (`needle` powered).
-- **`done`** - `function(result)`, that runs once with result of crawling/parsing
+- **`done`** (optional) - `function(result)`, that runs once with result of crawling/parsing
 
 ## Example
 

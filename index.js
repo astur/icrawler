@@ -24,6 +24,10 @@ function filterOpts(opts){
 
 module.exports = function(startURL, opts, parse, done){
     var result = [];
+    if (typeof opts === 'function') {
+        done = parse;
+        parse = opts;
+    }
     opts = filterOpts(opts);
     caba.start('%s results found');
 
@@ -65,7 +69,10 @@ module.exports = function(startURL, opts, parse, done){
 
     q.drain = function(){
         caba.finish();
-        done(result);
+        if (done) {
+            done(result);
+        }
+        
     };
 
     if (opts.cookieSource) {
