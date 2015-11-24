@@ -21,7 +21,7 @@ icrawler(startURL, opts, parse, done);
     - `decode_response` - (or decode) Whether to decode the text responses to UTF-8, if Content-Type header shows a different charset. Defaults to true.
     - `open_timeout` (or `timeout`) - Returns error if connection takes longer than X milisecs to establish. Defaults to 10000 (10 secs). 0 means no timeout.
     - `read_timeout` - Returns error if data transfer takes longer than X milisecs, after connection is established. Defaults to 0 (no timeout).
-    - `proxy` - Forwards request through HTTP(s) proxy. Eg. proxy: `'http://user:pass@proxy.server.com:3128'`.
+    - `proxy` - Forwards request through HTTP(s) proxy. Eg. `proxy: 'http://user:pass@proxy.server.com:3128'`. If array of strings - use random proxy from list for every request.
     - `headers` - Object containing custom HTTP headers for request. Overrides defaults described below.
     - `cookies` - Sets a {key: 'val'} object as a 'Cookie' header.
     - `connection` - Sets 'Connection' HTTP header. Defaults to close.
