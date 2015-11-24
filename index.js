@@ -9,6 +9,7 @@ function filterOpts(opts){
     o.concurrency = (opts.concurrency && !opts.cookieSource)? opts.concurrency : 1;
     if(opts.cookieSource){o.cookieSource = opts.cookieSource;}
     o.delay = opts.delay || 10000;
+    o.skipDuplicates = !!(opts.skipDuplicates);
 
     if (opts.open_timeout || opts.timeout) {o._.open_timeout = opts.open_timeout || opts.timeout;}
     if (opts.read_timeout) {o._.read_timeout = opts.read_timeout;}
@@ -28,6 +29,7 @@ function filterOpts(opts){
 
 module.exports = function(startURL, opts, parse, done){
     var result = [];
+    var passed = {};
     if (typeof opts === 'function') {
         done = parse;
         parse = opts;
@@ -49,7 +51,7 @@ module.exports = function(startURL, opts, parse, done){
                     }
                 } else {
                     parse(url, cheerio.load(res.body), {
-                        push: q.push,
+                        push: q.safePush,
                         save: function(v){result.push(v);},
                         step: caba.step,
                         log: caba.log
@@ -79,11 +81,27 @@ module.exports = function(startURL, opts, parse, done){
         if (done) {
             done(result);
         }
-        
+    };
+
+    q.safePush = !opts.skipDuplicates ? q.push : function(url){
+        function _push(url){
+            if (!url) {
+                return false;
+            }
+            if (passed[url] !== true) {
+                passed[url] = true;
+                q.push(url);
+            }
+            return true;
+        }
+        if (typeof url === 'string') {
+            url = [url];
+        }
+        while(_push(url.shift())){}
     };
 
     if (opts.cookieSource) {
-        q.push(opts.cookieSource);
+        q.safePush(opts.cookieSource);
     }
-    q.push(startURL);
+    q.safePush(startURL);
 };
