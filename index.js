@@ -1,7 +1,7 @@
 var cheerio = require('cheerio');
 var needle = require('needle');
 var async = require('async');
-var caba = require('caba')();
+var log = require('cllc')(module);
 
 function filterOpts(opts){
     opts = Object.prototype.toString.call(opts).slice(8,-1) === 'Object' ? opts : {};
@@ -36,7 +36,7 @@ module.exports = function(startURL, opts, parse, done){
         parse = opts;
     }
     opts = filterOpts(opts);
-    caba.start('%s results found');
+    log.start('%s results found');
 
     var q = async.queue(function(url, cb){
         if (opts.proxyArray) {
@@ -54,21 +54,21 @@ module.exports = function(startURL, opts, parse, done){
                     parse(url, cheerio.load(res.body), {
                         push: q.safePush,
                         save: function(v){result.push(v);},
-                        step: caba.step,
-                        log: caba.log
+                        step: log.step,
+                        log: log
                     }, res);
                 }
             } else {
-                caba.log('Error:', url);
+                log.e(url);
                 if (!q.paused) {
                     q.pause();
-                    caba.log('Paused!', new Date());
+                    log.w('Paused!', new Date());
                     setTimeout(function(){
                         if (opts.cookieSource) {
                             q.unshift(opts.cookieSource);
                         }
                         q.resume();
-                        caba.log('Resumed!', new Date());
+                        log.i('Resumed!', new Date());
                     }, opts.delay);
                 }
                 q.push(url);
@@ -78,7 +78,7 @@ module.exports = function(startURL, opts, parse, done){
     }, opts.concurrency);
 
     q.drain = function(){
-        caba.finish();
+        log.finish();
         if (done) {
             done(result);
         }
