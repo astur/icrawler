@@ -8,6 +8,7 @@ function filterOpts(opts){
     var o = {_: {}};
     o.concurrency = (opts.concurrency && !opts.cookieSource)? opts.concurrency : 1;
     if(opts.cookieSource){o.cookieSource = opts.cookieSource;}
+    if(opts.baseURL){o.baseURL = opts.baseURL;}
     o.delay = opts.delay || 10000;
     o.skipDuplicates = !!(opts.skipDuplicates);
 
@@ -83,10 +84,13 @@ module.exports = function(startURL, opts, parse, done){
         }
     };
 
-    q.safePush = !opts.skipDuplicates ? q.push : function(url){
+    q.safePush = function(url){
         function _push(url){
-            if (!url) {
+            if (!url || typeof url !== 'string') {
                 return false;
+            }
+            if (opts.baseURL && !/^http/i.test(url)) {
+                url = require('url').resolve(opts.baseURL, url);
             }
             if (passed[url] !== true) {
                 passed[url] = true;

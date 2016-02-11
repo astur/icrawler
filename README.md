@@ -30,6 +30,7 @@ icrawler(startURL, opts, parse, done);
 
 - **`startURL`** - URL of page for start crawling (or array of URLs).
 - **`opts`** (optional) - options:
+    - `baseURL` - base url for resolve relative urls
     - `cookieSource` - URL to get cookies from. It's possible to use RFC-1738 basic auth like this: `'http://user:pass@server.com'`.
     - `concurrency` - number of parallel requests. Defaults to 1. If `cookieSource` set - `concurrency` option will be ignored.
     - `delay` - time in milisecs to wait on error before try to crawle again. Defaults to 10000 (10 secs).
