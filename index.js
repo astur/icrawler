@@ -8,7 +8,6 @@ function filterOpts(opts){
     var o = {_: {}};
     o.concurrency = (opts.concurrency && !opts.cookieSource)? opts.concurrency : 1;
     if(opts.cookieSource){o.cookieSource = opts.cookieSource;}
-    if(opts.baseURL){o.baseURL = opts.baseURL;}
     o.delay = opts.delay || 10000;
     o.skipDuplicates = !!(opts.skipDuplicates);
 
@@ -38,6 +37,28 @@ module.exports = function(startURL, opts, parse, done){
     opts = filterOpts(opts);
     log.start('%s results found');
 
+    function safePush(baseURL){
+        return function (url, prior) {
+            if (typeof url === 'string') {
+                url = [url];
+            }
+            function _push(url){
+                if (!url || typeof url !== 'string') {
+                    return false;
+                }
+                if (baseURL && !/^http/i.test(url)) {
+                    url = require('url').resolve(baseURL, url);
+                }
+                if (passed[url] !== true) {
+                    passed[url] = true;
+                    q[prior ? 'unshift' : 'push'](url);
+                }
+                return true;
+            }
+            while(_push(url.shift())){}
+        };
+    }
+
     var q = async.queue(function(url, cb){
         if (opts.proxyArray) {
             opts._.proxy = opts.proxyArray[Math.floor(Math.random()*opts.proxyArray.length)];
@@ -52,7 +73,7 @@ module.exports = function(startURL, opts, parse, done){
                     }
                 } else {
                     parse(url, cheerio.load(res.body), {
-                        push: q.safePush,
+                        push: safePush(url),
                         save: function(v){result.push(v);},
                         step: log.step,
                         log: log
@@ -84,28 +105,8 @@ module.exports = function(startURL, opts, parse, done){
         }
     };
 
-    q.safePush = function(url){
-        function _push(url){
-            if (!url || typeof url !== 'string') {
-                return false;
-            }
-            if (opts.baseURL && !/^http/i.test(url)) {
-                url = require('url').resolve(opts.baseURL, url);
-            }
-            if (passed[url] !== true) {
-                passed[url] = true;
-                q.push(url);
-            }
-            return true;
-        }
-        if (typeof url === 'string') {
-            url = [url];
-        }
-        while(_push(url.shift())){}
-    };
-
     if (opts.cookieSource) {
-        q.safePush(opts.cookieSource);
+        safePush()(opts.cookieSource);
     }
-    q.safePush(startURL);
+    safePush()(startURL);
 };
