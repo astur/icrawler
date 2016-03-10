@@ -34,6 +34,7 @@ icrawler(startURL, opts, parse, done);
     - `concurrency` - number of parallel requests. Defaults to 1. If `cookieSource` set - `concurrency` option will be ignored.
     - `delay` - time in milisecs to wait on error before try to crawle again. Defaults to 10000 (10 secs).
     - `skipDuplicates` - if `true` parse every URL only once. Defaults to `false`.
+    - `errorsFirst` - if `true` failed requests will repeated before all others. if `false` - it will pushed in tail of queue. Defaults to `false`.
     - `decode_response` - (or `decode`) Whether to decode the text responses to UTF-8, if Content-Type header shows a different charset. Defaults to true.
     - `open_timeout` (or `timeout`) - Returns error if connection takes longer than X milisecs to establish. Defaults to 10000 (10 secs). 0 means no timeout.
     - `read_timeout` - Returns error if data transfer takes longer than X milisecs, after connection is established. Defaults to 0 (no timeout).

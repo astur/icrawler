@@ -10,6 +10,7 @@ function filterOpts(opts){
     if(opts.cookieSource){o.cookieSource = opts.cookieSource;}
     o.delay = opts.delay || 10000;
     o.skipDuplicates = !!(opts.skipDuplicates);
+    o.errorsFirst = !!(opts.errorsFirst);
 
     if (opts.open_timeout || opts.timeout) {o._.open_timeout = opts.open_timeout || opts.timeout;}
     if (opts.read_timeout) {o._.read_timeout = opts.read_timeout;}
@@ -92,7 +93,7 @@ module.exports = function(startURL, opts, parse, done){
                         log.i('Resumed!', new Date());
                     }, opts.delay);
                 }
-                q.push(url);
+                q[opts.errorsFirst ? 'unshift' : 'push'](url);
             }
             cb();
         });
