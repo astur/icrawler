@@ -15,8 +15,7 @@ function filterOpts(opts){
     if (opts.open_timeout || opts.timeout) {o._.open_timeout = opts.open_timeout || opts.timeout;}
     if (opts.read_timeout) {o._.read_timeout = opts.read_timeout;}
 
-    if (opts.proxy && typeof opts.proxy === 'string') {o._.proxy = opts.proxy;}
-    if (opts.proxy && Object.prototype.toString.call(opts.proxy).slice(8,-1) === 'Array') {o.proxyArray = opts.proxy;}
+    o.proxyArray = ({String: [opts.proxy], Array: opts.proxy})[Object.prototype.toString.call(opts.proxy).slice(8,-1)]
 
     if (opts.headers) {o._.headers = opts.headers;}
     if (opts.cookieSource) {o._.cookies = {};}
