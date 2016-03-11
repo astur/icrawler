@@ -15,6 +15,9 @@ function filterOpts(opts){
     o.proxyArray = ({String: [opts.proxy], Array: opts.proxy})[Object.prototype.toString.call(opts.proxy).slice(8,-1)];
     o.proxyRandom = !(opts.proxyRandom === false);
 
+    o.agentArray = ({String: [opts.user_agent], Array: opts.user_agent})[Object.prototype.toString.call(opts.user_agent).slice(8,-1)];
+    o.agentRandom = !(opts.agentRandom === false);
+
     if (opts.open_timeout || opts.timeout) {o._.open_timeout = opts.open_timeout || opts.timeout;}
     if (opts.read_timeout) {o._.read_timeout = opts.read_timeout;}
 
@@ -22,7 +25,6 @@ function filterOpts(opts){
     if (opts.cookieSource) {o._.cookies = {};}
     if (opts.cookies) {o._.cookies = opts.cookies;}
     if (opts.connection) {o._.connection = opts.connection;}
-    if (opts.user_agent) {o._.user_agent = opts.user_agent;}
     if (opts.decode_response === false) {o._.decode_response = false;}
 
     return o;
@@ -70,10 +72,14 @@ module.exports = function(startURL, opts, parse, done){
     }
 
     var getProxy = opts.proxyArray && getFromArray(opts.proxyArray);
+    var getAgent = opts.agentArray && getFromArray(opts.agentArray);
 
     var q = async.queue(function(url, cb){
         if (opts.proxyArray) {
             opts._.proxy = opts.proxyRandom ? getProxy(true) : opts._.proxy || getProxy();
+        }
+        if (opts.agentArray) {
+            opts._.user_agent = opts.agentRandom ? getAgent(true) : opts._.user_agent || getAgent();
         }
         needle.get(url, opts._, function(err, res){
             if (!err && res.statusCode === 200) {
@@ -99,6 +105,9 @@ module.exports = function(startURL, opts, parse, done){
                     setTimeout(function(){
                         if (opts.proxyArray && !opts.proxyRandom) {
                             opts._.proxy = getProxy();
+                        }
+                        if (opts.agentArray && !opts.agentRandom) {
+                            opts._.user_agent = getAgent();
                         }
                         if (opts.cookieSource) {
                             q.unshift(opts.cookieSource);

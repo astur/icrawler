@@ -43,7 +43,8 @@ icrawler(startURL, opts, parse, done);
     - `headers` - Object containing custom HTTP headers for request. Overrides defaults described below.
     - `cookies` - Sets a `{key: 'val'}` object as a 'Cookie' header.
     - `connection` - Sets 'Connection' HTTP header. Defaults to close.
-    - `user_agent` - Sets the 'User-Agent' HTTP header. Defaults to Needle/{version} (Node.js {nodeVersion}).
+    - `user_agent` - Sets the 'User-Agent' HTTP header. If array of strings - use 'User-Agent' header from list. Defaults to Needle/{version} (Node.js {nodeVersion}).
+    - `agentRandom` - if `true` use random 'User-Agent' from list for every request; if `false` after each error use new 'User-Agent' from list. Defaults to `true`. If `user_agent` is not array - `agentRandom` option will be ignored.
 - **`parse`** - page-parsing `function(url, $, _)` , that runs for every crawled page and gets this params:
     - `url` - url of parsed page
     - `$` - jQuery-like (`cheerio` powered) object for parsed page
