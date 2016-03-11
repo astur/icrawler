@@ -12,10 +12,11 @@ function filterOpts(opts){
     o.skipDuplicates = !!(opts.skipDuplicates);
     o.errorsFirst = !!(opts.errorsFirst);
 
+    o.proxyArray = ({String: [opts.proxy], Array: opts.proxy})[Object.prototype.toString.call(opts.proxy).slice(8,-1)];
+    o.proxyRandom = !(opts.proxyRandom === false);
+
     if (opts.open_timeout || opts.timeout) {o._.open_timeout = opts.open_timeout || opts.timeout;}
     if (opts.read_timeout) {o._.read_timeout = opts.read_timeout;}
-
-    o.proxyArray = ({String: [opts.proxy], Array: opts.proxy})[Object.prototype.toString.call(opts.proxy).slice(8,-1)]
 
     if (opts.headers) {o._.headers = opts.headers;}
     if (opts.cookieSource) {o._.cookies = {};}
@@ -59,9 +60,20 @@ module.exports = function(startURL, opts, parse, done){
         };
     }
 
+    function getFromArray(arr){
+        var i = 0;
+        return function(random){
+            if (random) return arr[Math.floor(Math.random()*arr.length)];
+            if (i >= arr.length) i = 0;
+            return arr[i++];
+        }
+    }
+
+    var getProxy = opts.proxyArray && getFromArray(opts.proxyArray);
+
     var q = async.queue(function(url, cb){
         if (opts.proxyArray) {
-            opts._.proxy = opts.proxyArray[Math.floor(Math.random()*opts.proxyArray.length)];
+            opts._.proxy = opts.proxyRandom ? getProxy(true) : opts._.proxy || getProxy();
         }
         needle.get(url, opts._, function(err, res){
             if (!err && res.statusCode === 200) {
@@ -85,6 +97,9 @@ module.exports = function(startURL, opts, parse, done){
                     q.pause();
                     log.w('Paused!', new Date());
                     setTimeout(function(){
+                        if (opts.proxyArray && !opts.proxyRandom) {
+                            opts._.proxy = getProxy();
+                        }
                         if (opts.cookieSource) {
                             q.unshift(opts.cookieSource);
                         }
