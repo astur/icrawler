@@ -90,7 +90,8 @@ module.exports = function(startURL, opts, parse, done){
                         }
                     }
                 } else {
-                    parse(url, cheerio.load(res.body), {
+                    var $ = typeof res.body === 'string' ? cheerio.load(res.body) : res.body;
+                    parse(url, $, {
                         push: safePush(url),
                         save: function(v){result.push(v);},
                         step: log.step,

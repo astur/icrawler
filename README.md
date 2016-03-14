@@ -47,7 +47,7 @@ icrawler(startURL, opts, parse, done);
     - `agentRandom` - if `true` use random 'User-Agent' from list for every request; if `false` after each error use new 'User-Agent' from list. Defaults to `true`. If `user_agent` is not array - `agentRandom` option will be ignored.
 - **`parse`** - page-parsing `function(url, $, _)` , that runs for every crawled page and gets this params:
     - `url` - url of parsed page
-    - `$` - jQuery-like (`cheerio` powered) object for parsed page
+    - `$` - jQuery-like (`cheerio` powered) object for html page or parsed object for `json`
     - `_` - object with four functions:
       - `_.push(url)` - adds new url (or array of urls) to crawler queue (will be parsed later)
       - `_.save(item)` - adds parsed item to results array
