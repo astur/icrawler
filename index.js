@@ -24,6 +24,8 @@ function filterOpts(opts){
     if (opts.connection) {o._.connection = opts.connection;}
     if (opts.decode_response === false) {o._.decode_response = false;}
 
+    o.init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
+
     return o;
 }
 
@@ -36,6 +38,19 @@ module.exports = function(startURL, opts, parse, done){
     }
     opts = filterOpts(opts);
     log.start('%s results found');
+
+    function start(){
+        opts.init(needle, log, function(err, cookies, headers){
+            if(err){
+                log.e('Init error:', err.message);
+                setTimeout(start, opts.delay);
+            }
+            for(var key in cookies){opts._.cookies[key] = cookies[key];}
+            for(var key in headers){opts._.headers[key] = headers[key];}
+            q.resume();
+            log.i('Resumed!', new Date());
+        });
+    }
 
     function safePush(baseURL){
         return function (url, prior) {
@@ -94,10 +109,7 @@ module.exports = function(startURL, opts, parse, done){
                     log.w('Paused!', new Date());
                     if (opts.proxyArray && !opts.proxyRandom) {opts._.proxy = getProxy();}
                     if (opts.agentArray && !opts.agentRandom) {opts._.user_agent = getAgent();}
-                    setTimeout(function(){
-                        q.resume();
-                        log.i('Resumed!', new Date());
-                    }, opts.delay);
+                    setTimeout(start, opts.delay);
                 }
                 q[opts.errorsFirst ? 'unshift' : 'push'](url);
             }
@@ -114,5 +126,5 @@ module.exports = function(startURL, opts, parse, done){
 
     q.pause();
     safePush()(startURL);
-    q.resume();
+    start();
 };

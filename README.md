@@ -43,6 +43,7 @@ icrawler(startURL, opts, parse, done);
     - `connection` - Sets 'Connection' HTTP header. Defaults to close.
     - `user_agent` - Sets the 'User-Agent' HTTP header. If array of strings - use 'User-Agent' header from list. Defaults to Needle/{version} (Node.js {nodeVersion}).
     - `agentRandom` - if `true` use random 'User-Agent' from list for every request; if `false` after each error use new 'User-Agent' from list. Defaults to `true`. If `user_agent` is not array - `agentRandom` option will be ignored.
+    - `init` - `function (needle, log, callback)` for preparing cookies and headers for crawling. Must run `callback(err)` if errors or `callback(null, cookies, headers)` if success.
 - **`parse`** - page-parsing `function(url, $, _)` , that runs for every crawled page and gets this params:
     - `url` - url of parsed page
     - `$` - jQuery-like (`cheerio` powered) object for html page or parsed object for `json`
@@ -61,7 +62,7 @@ var icrawler = require('icrawler');
 
 var opts = {
     concurrency: 10,
-    skipDuplicates: true
+    errorsFirst: true
 };
 
 icrawler(URL, opts, function(url, $, _){
