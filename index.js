@@ -6,8 +6,7 @@ var log = require('cllc')(module);
 function filterOpts(opts){
     opts = Object.prototype.toString.call(opts).slice(8,-1) === 'Object' ? opts : {};
     var o = {_: {}};
-    o.concurrency = (opts.concurrency && !opts.cookieSource)? opts.concurrency : 1;
-    if(opts.cookieSource){o.cookieSource = opts.cookieSource;}
+    o.concurrency = opts.concurrency || 1;
     o.delay = opts.delay || 10000;
     o.skipDuplicates = !!(opts.skipDuplicates);
     o.errorsFirst = !!(opts.errorsFirst);
@@ -21,9 +20,8 @@ function filterOpts(opts){
     if (opts.open_timeout || opts.timeout) {o._.open_timeout = opts.open_timeout || opts.timeout;}
     if (opts.read_timeout) {o._.read_timeout = opts.read_timeout;}
 
-    if (opts.headers) {o._.headers = opts.headers;}
-    if (opts.cookieSource) {o._.cookies = {};}
-    if (opts.cookies) {o._.cookies = opts.cookies;}
+    o._.cookies = opts.cookies || {};
+    o._.headers = opts.headers || {};
     if (opts.connection) {o._.connection = opts.connection;}
     if (opts.decode_response === false) {o._.decode_response = false;}
 
@@ -83,21 +81,13 @@ module.exports = function(startURL, opts, parse, done){
         }
         needle.get(url, opts._, function(err, res){
             if (!err && res.statusCode === 200) {
-                if (opts.cookieSource && url === opts.cookieSource) {
-                    for (var key in res.cookies){
-                        if (!/^__utm/.test(res.cookies[key])){
-                            opts._.cookies[key] = res.cookies[key];
-                        }
-                    }
-                } else {
-                    var $ = typeof res.body === 'string' ? cheerio.load(res.body) : res.body;
-                    parse(url, $, {
-                        push: safePush(url),
-                        save: function(v){result.push(v);},
-                        step: log.step,
-                        log: log
-                    }, res);
-                }
+                var $ = typeof res.body === 'string' ? cheerio.load(res.body) : res.body;
+                parse(url, $, {
+                    push: safePush(url),
+                    save: function(v){result.push(v);},
+                    step: log.step,
+                    log: log
+                }, res);
             } else {
                 log.e(url);
                 if (!q.paused) {
@@ -109,9 +99,6 @@ module.exports = function(startURL, opts, parse, done){
                         }
                         if (opts.agentArray && !opts.agentRandom) {
                             opts._.user_agent = getAgent();
-                        }
-                        if (opts.cookieSource) {
-                            q.unshift(opts.cookieSource);
                         }
                         q.resume();
                         log.i('Resumed!', new Date());
@@ -130,8 +117,5 @@ module.exports = function(startURL, opts, parse, done){
         }
     };
 
-    if (opts.cookieSource) {
-        safePush()(opts.cookieSource);
-    }
     safePush()(startURL);
 };
