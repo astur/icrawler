@@ -10,11 +10,11 @@ Tool for easy scraping data from websites
 - Persistent error-proof crawling
 - jQuery-like server-side DOM parsing with Cheerio
 - Parallel requests
-- Proxy list support
-- HTTP auth and cookie forwarding
+- Proxy list and user-agent list support
+- HTTP headers and cookies setup
 - Automatic charset detection and conversion
 - Console progress indicator
-- node 0.10 and 0.12 support
+- node from 0.10 to 5.8 support
 
 ## Install
 
