@@ -44,11 +44,12 @@ module.exports = function(startURL, opts, parse, done){
             if(err){
                 log.e('Init error:', err.message);
                 setTimeout(start, opts.delay);
+            } else {
+                for(var key in cookies){opts._.cookies[key] = cookies[key];}
+                for(var key in headers){opts._.headers[key] = headers[key];}
+                q.resume();
+                log.i('Resumed!', new Date());
             }
-            for(var key in cookies){opts._.cookies[key] = cookies[key];}
-            for(var key in headers){opts._.headers[key] = headers[key];}
-            q.resume();
-            log.i('Resumed!', new Date());
         });
     }
 
