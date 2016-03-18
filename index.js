@@ -13,7 +13,7 @@ module.exports = function(startURL, opts, parse, done){
         if (opts.open_timeout || opts.timeout) {o.open_timeout = opts.open_timeout || opts.timeout;}
         if (opts.read_timeout) {o.read_timeout = opts.read_timeout;}
         if (opts.connection) {o.connection = opts.connection;}
-        if (opts.decode_response === false) {odecode_response = false;}
+        if (opts.decode_response === false) {o.decode_response = false;}
 
         return o;
     }
