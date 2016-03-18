@@ -92,13 +92,9 @@ module.exports = function(startURL, opts, parse, done){
                 if (!q.paused) {
                     q.pause();
                     log.w('Paused!', new Date());
+                    if (opts.proxyArray && !opts.proxyRandom) {opts._.proxy = getProxy();}
+                    if (opts.agentArray && !opts.agentRandom) {opts._.user_agent = getAgent();}
                     setTimeout(function(){
-                        if (opts.proxyArray && !opts.proxyRandom) {
-                            opts._.proxy = getProxy();
-                        }
-                        if (opts.agentArray && !opts.agentRandom) {
-                            opts._.user_agent = getAgent();
-                        }
                         q.resume();
                         log.i('Resumed!', new Date());
                     }, opts.delay);
@@ -116,5 +112,7 @@ module.exports = function(startURL, opts, parse, done){
         }
     };
 
+    q.pause();
     safePush()(startURL);
+    q.resume();
 };
