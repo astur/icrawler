@@ -8,7 +8,6 @@ function filterOpts(opts){
     var o = {_: {}};
     o.concurrency = opts.concurrency || 1;
     o.delay = opts.delay || 10000;
-    o.skipDuplicates = !!(opts.skipDuplicates);
     o.errorsFirst = !!(opts.errorsFirst);
 
     o.proxyArray = ({String: [opts.proxy], Array: opts.proxy})[Object.prototype.toString.call(opts.proxy).slice(8,-1)];
