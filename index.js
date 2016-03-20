@@ -46,6 +46,7 @@ module.exports = function(startURL, opts, parse, done){
                 }
                 if (passed[url] !== true) {
                     passed[url] = true;
+                    tasks.push(url);
                     q[prior ? 'unshift' : 'push'](url);
                 }
                 return true;
@@ -63,7 +64,8 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
-    var result = [];
+    var results = [];
+    var tasks = [];
     var passed = {};
 
     if (typeof opts === 'function') {
@@ -82,6 +84,7 @@ module.exports = function(startURL, opts, parse, done){
     var agentRandom = !(opts.agentRandom === false);
 
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
+    var save = opts.save || function (tasks, results){}
 
     opts = filterOpts(opts);
 
@@ -100,14 +103,16 @@ module.exports = function(startURL, opts, parse, done){
                 var $ = typeof res.body === 'string' ? cheerio.load(res.body) : res.body;
                 parse(url, $, {
                     push: safePush(url),
-                    save: function(v){result.push(v);},
+                    save: function(v){results.push(v);},
                     step: log.step,
                     log: log
                 }, res);
+                tasks.splice(tasks.indexOf(url), 1);
             } else {
                 log.e(url);
                 if (!q.paused) {
                     q.pause();
+                    save(tasks, results);
                     log.w('Paused!', new Date());
                     if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
                     if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
@@ -121,8 +126,9 @@ module.exports = function(startURL, opts, parse, done){
 
     q.drain = function(){
         log.finish();
+        save(tasks, results);
         if (done) {
-            done(result);
+            done(results);
         }
     };
 
