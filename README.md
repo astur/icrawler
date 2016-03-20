@@ -8,6 +8,7 @@ Tool for easy scraping data from websites
 
 - Clean and simple API
 - Persistent error-proof crawling
+- State saving for continuous crawling
 - jQuery-like server-side DOM parsing with Cheerio
 - Parallel requests
 - Proxy list and user-agent list support
@@ -69,6 +70,73 @@ var opts = {
     concurrency: 10,
     errorsFirst: true
 };
+
+icrawler(URL, opts, function(url, $, _){
+    if($('#next').length > 0){
+        _.push($('.next').attr('href'));
+        _.log('PAGE');
+    }
+    $('.news>a').each(function() {
+        _.step();
+        _.save({
+            title: $(this).text(),
+            href: $(this).attr('href')
+        })
+    });
+}, function(result){
+    console.log(result);
+});
+```
+
+## More complicated example
+
+```js
+var icrawler = require('icrawler');
+var fs = require('fs');
+
+var opts = {
+    errorsFirst: true,
+    concurrency: 30,
+    saveOnCount: 500,
+    init: function(needle, log, cb){
+        needle.get(specialURL, {}, function(err, res){
+            if (err) return cb(err);
+            cb(null, res.cookies, {});
+        });
+    },
+    save: function(tasks, results){
+        fs.writeFileSync(
+            './data.json',
+            JSON.stringify({tasks: tasks, results: results}, null, 4)
+        );
+    },
+    delay: 30000,
+    agentRandom: false,
+    user_agent: [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1',
+        'Opera/9.80 (X11; Linux i686; Ubuntu/14.10) Presto/2.12.388 Version/12.16',
+        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
+    ],
+    proxyRandom: false,
+    proxy: [
+        'http://117.135.250.130:8080',
+        'http://117.135.250.132:8080',
+        'http://117.135.251.133:8080',
+        'http://117.135.251.132:8080',
+    ],
+};
+
+if(fs.existsSync('./data.json')){
+    var data = fs.readFileSync('./data.json', 'utf8');
+    data = JSON.parse(data);
+    if (data.tasks.length === 0) {
+        console.log('All tasks done');
+        process.exit(0);
+    }
+    URL = data.tasks;
+    opts.results = data.results;
+}
 
 icrawler(URL, opts, function(url, $, _){
     if($('#next').length > 0){
