@@ -64,7 +64,6 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
-    var results = [];
     var tasks = [];
     var passed = {};
 
@@ -85,6 +84,8 @@ module.exports = function(startURL, opts, parse, done){
 
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
     var save = opts.save || function (tasks, results){}
+    
+    var results = opts.results || [];
 
     opts = filterOpts(opts);
 
