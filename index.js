@@ -66,6 +66,7 @@ module.exports = function(startURL, opts, parse, done){
 
     var tasks = [];
     var passed = {};
+    var count = 0;
 
     if (typeof opts === 'function') {
         done = parse;
@@ -84,7 +85,11 @@ module.exports = function(startURL, opts, parse, done){
 
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
     var save = opts.save || function (tasks, results){}
-    
+
+    var saveOnError = !(opts.saveOnError === false);
+    var saveOnFinish = !(opts.saveOnFinish === false);
+    var saveOnCount = opts.saveOnCount || false;
+
     var results = opts.results || [];
 
     opts = filterOpts(opts);
@@ -93,14 +98,18 @@ module.exports = function(startURL, opts, parse, done){
     var getAgent = agentArray && getFromArray(agentArray);
 
     var q = async.queue(function(url, cb){
+        count++;
         if (proxyArray) {
             opts.proxy = proxyRandom ? getProxy(true) : opts.proxy || getProxy();
         }
         if (agentArray) {
             opts.user_agent = agentRandom ? getAgent(true) : opts.user_agent || getAgent();
         }
+        if (saveOnCount && count % saveOnCount === 0) {
+            save(tasks, results);
+        }
         needle.get(url, opts, function(err, res){
-            if (!err && res.statusCode === 200) {
+            if (!err && res.statusCode === 200 && !q.paused) {
                 var $ = typeof res.body === 'string' ? cheerio.load(res.body) : res.body;
                 parse(url, $, {
                     push: safePush(url),
@@ -110,15 +119,15 @@ module.exports = function(startURL, opts, parse, done){
                 }, res);
                 tasks.splice(tasks.indexOf(url), 1);
             } else {
-                log.e(url);
                 if (!q.paused) {
                     q.pause();
-                    save(tasks, results);
+                    saveOnError && save(tasks, results);
                     log.w('Paused!', new Date());
                     if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
                     if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
                     setTimeout(start, delay);
                 }
+                log.e(url);
                 q[errorsFirst ? 'unshift' : 'push'](url);
             }
             cb();
@@ -127,13 +136,13 @@ module.exports = function(startURL, opts, parse, done){
 
     q.drain = function(){
         log.finish();
-        save(tasks, results);
+        saveOnFinish && save(tasks, results);
         if (done) {
             done(results);
         }
     };
 
-    log.start('%s results found');
+    log.start('%s results found', results.length);
 
     q.pause();
     safePush()(startURL);
