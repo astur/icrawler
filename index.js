@@ -90,6 +90,8 @@ module.exports = function(startURL, opts, parse, done){
     var saveOnFinish = !(opts.saveOnFinish === false);
     var saveOnCount = opts.saveOnCount || false;
 
+    var asyncParse = opts.asyncParse || false;
+
     var results = opts.results || [];
 
     opts = filterOpts(opts);
@@ -111,13 +113,23 @@ module.exports = function(startURL, opts, parse, done){
         needle.get(url, opts, function(err, res){
             if (!err && res.statusCode === 200 && !q.paused) {
                 var $ = typeof res.body === 'string' ? cheerio.load(res.body) : res.body;
-                parse(url, $, {
+                var _ = {
                     push: safePush(url),
                     save: function(v){results.push(v);},
                     step: log.step,
                     log: log
-                }, res);
-                tasks.splice(tasks.indexOf(url), 1);
+                }
+                if (asyncParse) {
+                    _.cb = function(){
+                        tasks.splice(tasks.indexOf(url), 1);
+                        cb();
+                    };
+                    parse(url, $, _, res);
+                } else {
+                    parse(url, $, _, res);
+                    tasks.splice(tasks.indexOf(url), 1);
+                    cb();
+                }
             } else {
                 if (!q.paused) {
                     q.pause();
@@ -129,8 +141,8 @@ module.exports = function(startURL, opts, parse, done){
                 }
                 log.e(url);
                 q[errorsFirst ? 'unshift' : 'push'](url);
+                cb();
             }
-            cb();
         });
     }, concurrency);
 

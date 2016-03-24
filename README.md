@@ -50,6 +50,7 @@ icrawler(startURL, opts, parse, done);
     - `saveOnFinish` - if `true` runs `save` when crawling finished. Defaults to `true`.
     - `saveOnCount` - if number runs `save` every `saveOnCount` requests.
     - `results` - results saved by `save` for continue crawling after crash or manual break.
+    - `asyncParse` - if `true` - runs `parse` in asynchronous mode. Defaults to `false`.
 - **`parse`** - page-parsing `function(url, $, _, res)` , that runs for every crawled page and gets this params:
     - `url` - url of parsed page
     - `$` - jQuery-like (`cheerio` powered) object for html page or parsed object for `json`
@@ -58,6 +59,7 @@ icrawler(startURL, opts, parse, done);
       - `_.save(item)` - adds parsed item to results array
       - `_.step()` - increment indicator
       - `_.log(message /*, ... */)` - safe logging (use it instead `console.log`)
+      - `_.cb` - callback function for asynchronous mode. Is undefined if `asyncParse` is `false`.
     - `res` (optional) - full response object (`needle` powered).
 - **`done`** (optional) - `function(result)`, that runs once with result of crawling/parsing
 
