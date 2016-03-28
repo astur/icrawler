@@ -27,7 +27,7 @@ module.exports = function(startURL, opts, parse, done){
                 for(var key in cookies){opts.cookies[key] = cookies[key];}
                 for(var key in headers){opts.headers[key] = headers[key];}
                 q.resume();
-                log.i('Resumed!', new Date());
+                log.i('Resumed!');
             }
         });
     }
@@ -134,7 +134,7 @@ module.exports = function(startURL, opts, parse, done){
                 if (!q.paused) {
                     q.pause();
                     saveOnError && save(tasks, results);
-                    log.w('Paused!', new Date());
+                    log.w('Paused!');
                     if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
                     if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
                     setTimeout(start, delay);
