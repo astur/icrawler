@@ -18,18 +18,29 @@ module.exports = function(startURL, opts, parse, done){
         return o;
     }
 
-    function start(){
-        init(needle, log, function(err, cookies, headers){
-            if(err){
-                log.e('Init error: ' + err.message);
-                setTimeout(start, delay);
-            } else {
-                for(var key in cookies){opts.cookies[key] = cookies[key];}
-                for(var key in headers){opts.headers[key] = headers[key];}
-                q.resume();
-                log.i('Resumed!');
-            }
-        });
+    function start(isStart){
+        var message = isStart ? 'Started!' : 'Resumed!';
+        if (isStart) {
+            log.start('%s results found', results.length);
+            q.pause();
+            safePush()(startURL);
+        }
+        if (isStart || initOnError) {
+            init(needle, log, function(err, cookies, headers){
+                if(err){
+                    log.e('Init error: ' + err.message);
+                    setTimeout(start, delay);
+                } else {
+                    for(var key in cookies){opts.cookies[key] = cookies[key];}
+                    for(var key in headers){opts.headers[key] = headers[key];}
+                    q.resume();
+                    log.i(message);
+                }
+            });
+        } else {
+            q.resume();
+            log.i(message);
+        }
     }
 
     function safePush(baseURL){
@@ -84,6 +95,8 @@ module.exports = function(startURL, opts, parse, done){
     var agentRandom = !(opts.agentRandom === false);
 
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
+    var initOnError = !(opts.initOnError === false);
+
     var save = opts.save || function (tasks, results){}
 
     var saveOnError = !(opts.saveOnError === false);
@@ -153,10 +166,5 @@ module.exports = function(startURL, opts, parse, done){
             done(results);
         }
     };
-
-    log.start('%s results found', results.length);
-
-    q.pause();
-    safePush()(startURL);
-    start();
+    start(true);
 };

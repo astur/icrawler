@@ -45,6 +45,7 @@ icrawler(startURL, opts, parse, done);
     - `user_agent` - Sets the 'User-Agent' HTTP header. If array of strings - use 'User-Agent' header from list. Defaults to Needle/{version} (Node.js {nodeVersion}).
     - `agentRandom` - if `true` use random 'User-Agent' from list for every request; if `false` after each error use new 'User-Agent' from list. Defaults to `true`. If `user_agent` is not array - `agentRandom` option will be ignored.
     - `init` - `function (needle, log, callback)` for preparing cookies and headers for crawling. Must run `callback(err)` if errors or `callback(null, cookies, headers)` if success.
+    - `initOnError` - if `true` run `init` on every resume after errors. If `false` run `init` only on start. If `init` is not set - `initOnError` option will be ignored. Defaults to `true`.
     - `save` - `function (tasks, results)` for saving crawler state (tasks in queue and already prepared results).
     - `saveOnError` - if `true` runs `save` every time when paused on error.  Defaults to `true`.
     - `saveOnFinish` - if `true` runs `save` when crawling finished. Defaults to `true`.
