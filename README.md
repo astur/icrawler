@@ -35,6 +35,7 @@ icrawler(startURL, opts, parse, done);
     - `delay` - time in milisecs to wait on error before try to crawle again. Defaults to 10000 (10 secs).
     - `errorsFirst` - if `true` failed requests will repeated before all others. if `false` - it will pushed in tail of queue. Defaults to `false`.
     - `decode_response` - (or `decode`) Whether to decode the text responses to UTF-8, if Content-Type header shows a different charset. Defaults to true.
+    - `noJquery` - if `true` send response body string to `parse` function (as `$` parameter) as is, without jQuery-like parsing. Defaults to `false`.
     - `open_timeout` (or `timeout`) - Returns error if connection takes longer than X milisecs to establish. Defaults to 10000 (10 secs). 0 means no timeout.
     - `read_timeout` - Returns error if data transfer takes longer than X milisecs, after connection is established. Defaults to 0 (no timeout).
     - `proxy` - Forwards request through HTTP(s) proxy. Eg. `proxy: 'http://user:pass@proxy.server.com:3128'`. If array of strings - use proxies from list.
@@ -54,7 +55,7 @@ icrawler(startURL, opts, parse, done);
     - `asyncParse` - if `true` - runs `parse` in asynchronous mode. Defaults to `false`.
 - **`parse`** - page-parsing `function(url, $, _, res)` , that runs for every crawled page and gets this params:
     - `url` - url of parsed page
-    - `$` - jQuery-like (`cheerio` powered) object for html page or parsed object for `json`
+    - `$` - jQuery-like (`cheerio` powered) object for html page or parsed object for `json` or raw response body if `noJquery` is `true`.
     - `_` - object with four functions:
       - `_.push(url)` - adds new url (or array of urls) to crawler queue (will be parsed later)
       - `_.save(item)` - adds parsed item to results array

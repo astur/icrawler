@@ -87,6 +87,7 @@ module.exports = function(startURL, opts, parse, done){
     var concurrency = opts.concurrency || 1;
     var delay = opts.delay || 10000;
     var errorsFirst = !!(opts.errorsFirst);
+    var noJquery = opts.noJquery || false;
 
     var proxyArray = ({String: [opts.proxy], Array: opts.proxy})[Object.prototype.toString.call(opts.proxy).slice(8,-1)];
     var proxyRandom = !(opts.proxyRandom === false);
@@ -125,7 +126,7 @@ module.exports = function(startURL, opts, parse, done){
         }
         needle.get(url, opts, function(err, res){
             if (!err && res.statusCode === 200 && !q.paused) {
-                var $ = typeof res.body === 'string' ? cheerio.load(res.body) : res.body;
+                var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
                 var _ = {
                     push: safePush(url),
                     save: function(v){results.push(v);},
