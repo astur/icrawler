@@ -21,7 +21,7 @@ module.exports = function(startURL, opts, parse, done){
     function start(){
         init(needle, log, function(err, cookies, headers){
             if(err){
-                log.e('Init error:', err.message);
+                log.e('Init error: ' + err.message);
                 setTimeout(start, delay);
             } else {
                 for(var key in cookies){opts.cookies[key] = cookies[key];}
