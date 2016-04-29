@@ -108,7 +108,7 @@ module.exports = function(startURL, opts, parse, done){
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
     var initOnError = !(opts.initOnError === false);
 
-    var save = opts.save || function (tasks, results, Object.keys(passed)){}
+    var save = opts.save || function (tasks, results, passed){}
 
     var saveOnError = !(opts.saveOnError === false);
     var saveOnFinish = !(opts.saveOnFinish === false);
