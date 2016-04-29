@@ -31,6 +31,8 @@ module.exports = function(startURL, opts, parse, done){
                     log.e('Init error: ' + err.message);
                     setTimeout(start, delay);
                 } else {
+                    cleanCookiesOnInit && (opts.cookies = {});
+                    cleanHeadersOnInit && (opts.headers = {});
                     for(var key in cookies){opts.cookies[key] = cookies[key];}
                     for(var key in headers){opts.headers[key] = headers[key];}
                     q.resume();
@@ -107,6 +109,8 @@ module.exports = function(startURL, opts, parse, done){
 
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
     var initOnError = !(opts.initOnError === false);
+    var cleanCookiesOnInit = opts.cleanCookiesOnInit || false;
+    var cleanHeadersOnInit = opts.cleanHeadersOnInit || false;
 
     var save = opts.save || function (tasks, results, passed){}
 

@@ -47,6 +47,8 @@ icrawler(startURL, opts, parse, done);
     - `agentRandom` - if `true` use random 'User-Agent' from list for every request; if `false` after each error use new 'User-Agent' from list. Defaults to `true`. If `user_agent` is not array - `agentRandom` option will be ignored.
     - `init` - `function (needle, log, callback)` for preparing cookies and headers for crawling. Must run `callback(err)` if errors or `callback(null, cookies, headers)` if success.
     - `initOnError` - if `true` run `init` on every resume after errors. If `false` run `init` only on start. If `init` is not set - `initOnError` option will be ignored. Defaults to `true`.
+    - `cleanCookiesOnInit` - if `true` clean old cookies on `init` run. Defaults to `false`.
+    - `cleanHeadersOnInit` - if `true` clean old headers on `init` run. Defaults to `false`.
     - `save` - `function (tasks, results, passed)` for saving crawler state (tasks in queue, already prepared results and passed urls).
     - `saveOnError` - if `true` runs `save` every time when paused on error.  Defaults to `true`.
     - `saveOnFinish` - if `true` runs `save` when crawling finished. Defaults to `true`.
