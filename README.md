@@ -47,11 +47,12 @@ icrawler(startURL, opts, parse, done);
     - `agentRandom` - if `true` use random 'User-Agent' from list for every request; if `false` after each error use new 'User-Agent' from list. Defaults to `true`. If `user_agent` is not array - `agentRandom` option will be ignored.
     - `init` - `function (needle, log, callback)` for preparing cookies and headers for crawling. Must run `callback(err)` if errors or `callback(null, cookies, headers)` if success.
     - `initOnError` - if `true` run `init` on every resume after errors. If `false` run `init` only on start. If `init` is not set - `initOnError` option will be ignored. Defaults to `true`.
-    - `save` - `function (tasks, results)` for saving crawler state (tasks in queue and already prepared results).
+    - `save` - `function (tasks, results, passed)` for saving crawler state (tasks in queue, already prepared results and passed urls).
     - `saveOnError` - if `true` runs `save` every time when paused on error.  Defaults to `true`.
     - `saveOnFinish` - if `true` runs `save` when crawling finished. Defaults to `true`.
     - `saveOnCount` - if number runs `save` every `saveOnCount` requests.
     - `results` - results saved by `save` for continue crawling after crash or manual break.
+    - `passed` - array of urls, that can't be pushed to queue again (for duplicate avoiding).
     - `asyncParse` - if `true` - runs `parse` in asynchronous mode. Defaults to `false`.
 - **`parse`** - page-parsing `function(url, $, _, res)` , that runs for every crawled page and gets this params:
     - `url` - url of parsed page

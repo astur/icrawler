@@ -75,8 +75,18 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
+    function objFromArray(arr){
+        var obj = {};
+        if (arr !== undefined){
+            for (var i = 0; i < arr.length; i++) {
+                obj[arr[i]] = true
+            }
+        }
+        return obj;
+    }
+
     var tasks = [];
-    var passed = {};
+    var passed = objFromArray(opts.passed);
     var count = 0;
 
     if (typeof opts === 'function') {
@@ -98,7 +108,7 @@ module.exports = function(startURL, opts, parse, done){
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
     var initOnError = !(opts.initOnError === false);
 
-    var save = opts.save || function (tasks, results){}
+    var save = opts.save || function (tasks, results, Object.keys(passed)){}
 
     var saveOnError = !(opts.saveOnError === false);
     var saveOnFinish = !(opts.saveOnFinish === false);
@@ -122,7 +132,7 @@ module.exports = function(startURL, opts, parse, done){
             opts.user_agent = agentRandom ? getAgent(true) : opts.user_agent || getAgent();
         }
         if (saveOnCount && count % saveOnCount === 0) {
-            save(tasks, results);
+            save(tasks, results, Object.keys(passed));
         }
         needle.get(url, opts, function(err, res){
             if (!err && res.statusCode === 200 && !q.paused) {
@@ -147,7 +157,7 @@ module.exports = function(startURL, opts, parse, done){
             } else {
                 if (!q.paused) {
                     q.pause();
-                    saveOnError && save(tasks, results);
+                    saveOnError && save(tasks, results, Object.keys(passed));
                     log.w('Paused!');
                     if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
                     if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
@@ -162,7 +172,7 @@ module.exports = function(startURL, opts, parse, done){
 
     q.drain = function(){
         log.finish();
-        saveOnFinish && save(tasks, results);
+        saveOnFinish && save(tasks, results, Object.keys(passed));
         if (done) {
             done(results);
         }
