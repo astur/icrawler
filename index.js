@@ -2,6 +2,7 @@ var cheerio = require('cheerio');
 var needle = require('needle');
 var async = require('async');
 var log = require('cllc')(module);
+var onDeath = require('death');
 
 
 module.exports = function(startURL, opts, parse, done){
@@ -116,6 +117,7 @@ module.exports = function(startURL, opts, parse, done){
 
     var saveOnError = !(opts.saveOnError === false);
     var saveOnFinish = !(opts.saveOnFinish === false);
+    var saveOnExit = !(opts.saveOnExit === false);
     var saveOnCount = opts.saveOnCount || false;
 
     var asyncParse = opts.asyncParse || false;
@@ -181,5 +183,12 @@ module.exports = function(startURL, opts, parse, done){
             done(results);
         }
     };
+
     start(true);
+
+    onDeath(function() {
+        log.finish();
+        saveOnExit && save(tasks, results, Object.keys(passed));
+        process.exit();
+    });
 };

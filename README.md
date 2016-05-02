@@ -52,6 +52,7 @@ icrawler(startURL, opts, parse, done);
     - `save` - `function (tasks, results, passed)` for saving crawler state (tasks in queue, already prepared results and passed urls).
     - `saveOnError` - if `true` runs `save` every time when paused on error.  Defaults to `true`.
     - `saveOnFinish` - if `true` runs `save` when crawling finished. Defaults to `true`.
+    - `saveOnExit` - if `true` runs `save` when user abort script by `Ctrl+C`. Defaults to `true`.
     - `saveOnCount` - if number runs `save` every `saveOnCount` requests.
     - `results` - results saved by `save` for continue crawling after crash or manual break.
     - `passed` - array of urls, that can't be pushed to queue again (for duplicate avoiding).
