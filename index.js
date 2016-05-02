@@ -23,7 +23,7 @@ module.exports = function(startURL, opts, parse, done){
         if (isStart) {
             log.start('%s results found', results.length);
             q.pause();
-            safePush()(startURL);
+            safePush(null)(startURL);
         }
         if (isStart || initOnError) {
             init(needle, log, function(err, cookies, headers){
@@ -57,7 +57,7 @@ module.exports = function(startURL, opts, parse, done){
                 if (baseURL && !/^http/i.test(url)) {
                     url = require('url').resolve(baseURL, url);
                 }
-                if (passed[url] !== true) {
+                if (passed[url] !== true || baseURL === url || baseURL === null) {
                     passed[url] = true;
                     tasks.push(url);
                     q[prior ? 'unshift' : 'push'](url);
