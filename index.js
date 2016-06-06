@@ -21,6 +21,8 @@ module.exports = function(startURL, opts, parse, done){
 
     function start(isStart){
         var message = isStart ? 'Started!' : 'Resumed!';
+        if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
+        if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
         if (isStart) {
             log.start('%s results found', results.length);
             q.pause();
@@ -131,12 +133,8 @@ module.exports = function(startURL, opts, parse, done){
 
     var q = tress(function(url, cb){
         count++;
-        if (proxyArray) {
-            opts.proxy = proxyRandom ? getProxy(true) : opts.proxy || getProxy();
-        }
-        if (agentArray) {
-            opts.user_agent = agentRandom ? getAgent(true) : opts.user_agent || getAgent();
-        }
+        if (proxyArray && proxyRandom) {opts.proxy = getProxy(true);}
+        if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
         if (saveOnCount && count % saveOnCount === 0) {
             save(tasks, results, Object.keys(passed));
         }
@@ -165,8 +163,6 @@ module.exports = function(startURL, opts, parse, done){
                     q.pause();
                     saveOnError && save(tasks, results, Object.keys(passed));
                     log.w('Paused!');
-                    if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
-                    if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
                     setTimeout(start, delay);
                 }
                 log.e(url);
