@@ -1,6 +1,6 @@
 var cheerio = require('cheerio');
 var needle = require('needle');
-var async = require('async');
+var tress = require('tress');
 var log = require('cllc')(module);
 var onDeath = require('death');
 
@@ -129,7 +129,7 @@ module.exports = function(startURL, opts, parse, done){
     var getProxy = proxyArray && getFromArray(proxyArray);
     var getAgent = agentArray && getFromArray(agentArray);
 
-    var q = async.queue(function(url, cb){
+    var q = tress(function(url, cb){
         count++;
         if (proxyArray) {
             opts.proxy = proxyRandom ? getProxy(true) : opts.proxy || getProxy();

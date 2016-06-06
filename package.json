@@ -26,10 +26,10 @@
     "jshint-stylish": "^2.0.1"
   },
   "dependencies": {
-    "async": "^1.5.0",
     "cheerio": "^0.19.0",
     "cllc": "0.0.3",
     "death": "^1.0.0",
-    "needle": "^0.11.0"
+    "needle": "^0.11.0",
+    "tress": "^1.0.3"
   }
 }
