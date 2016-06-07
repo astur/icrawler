@@ -46,25 +46,6 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
-    function safePush(baseURL){
-        return function (url, prior) {
-            if (typeof url === 'string') {
-                url = [url];
-            }
-            function _push(url){
-                if (!url || typeof url !== 'string') {
-                    return false;
-                }
-                if (baseURL && !/^http/i.test(url)) {
-                    url = require('url').resolve(baseURL, url);
-                }
-                q[prior ? 'unshift' : 'push'](url);
-                return true;
-            }
-            while(_push(url.shift())){}
-        };
-    }
-
     function getFromArray(arr){
         var i = 0;
         return function(random){
@@ -83,7 +64,17 @@ module.exports = function(startURL, opts, parse, done){
             if (!err && res.statusCode === 200 && !q.paused) {
                 var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
                 var _ = {
-                    push: safePush(url),
+                    push: function(URL, prior){
+                        if(typeof URL === 'string'){
+                            URL = [URL];
+                        }
+                        for (var i = 0; i < URL.length; i++) {
+                            if (!/^http/i.test(URL)) {
+                                URL[i] = require('url').resolve(url, URL[i]);
+                            }
+                            q[prior ? 'unshift' : 'push'](URL[i]);
+                        };
+                    },
                     save: function(v){results.push(v);},
                     step: log.step,
                     log: log
