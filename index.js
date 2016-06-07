@@ -3,6 +3,7 @@ var needle = require('needle');
 var tress = require('tress');
 var log = require('cllc')(module);
 var onDeath = require('death');
+var fs = require('fs');
 
 
 module.exports = function(startURL, opts, parse, done){
@@ -134,15 +135,19 @@ module.exports = function(startURL, opts, parse, done){
     var cleanCookiesOnInit = opts.cleanCookiesOnInit || false;
     var cleanHeadersOnInit = opts.cleanHeadersOnInit || false;
 
-    var save = (function(saveF){
+    var save = (function(saveF, fileN){
         return function(){
-            if(typeof saveF === 'function'){
+            if (fileN) {
+                q.save(function(tasks){
+                    fs.writeFileSync(fileN, JSON.stringify({tasks: tasks, results: results}, null, 4))
+                });
+            } else if (typeof saveF === 'function'){
                 q.save(function(tasks){
                     saveF(tasks, results);
                 });
             }
         };
-    })(opts.save)
+    })(opts.save, opts.file)
 
     var saveOnError = !(opts.saveOnError === false);
     var saveOnFinish = !(opts.saveOnFinish === false);
@@ -168,14 +173,17 @@ module.exports = function(startURL, opts, parse, done){
         }
     };
 
-    log.start('%s results found', results.length);
-
-    if (opts.tasks) {
+    if (opts.file && fs.existsSync(opts.file)) {
+        var obj = JSON.parse(fs.readFileSync(opts.file, 'utf8'));
+        results = obj.results;
+        q.load(obj.tasks);
+    } else if (opts.tasks) {
         q.load(opts.tasks);
     } else {
         q.push(startURL);
     }
-    // or q.load from file
+
+    log.start('%s results found', results.length);
 
     opts = filterOpts(opts);
 
