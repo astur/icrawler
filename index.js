@@ -24,8 +24,6 @@ module.exports = function(startURL, opts, parse, done){
         var message = isStart ? 'Started!' : 'Resumed!';
         if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
         if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
-        if (isStart) {
-        }
         if (isStart || initOnError) {
             init(needle, log, function(err, cookies, headers){
                 if(err){
