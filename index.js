@@ -24,9 +24,6 @@ module.exports = function(startURL, opts, parse, done){
         if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
         if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
         if (isStart) {
-            log.start('%s results found', results.length);
-            q.pause();
-            safePush(null)(startURL);
         }
         if (isStart || initOnError) {
             init(needle, log, function(err, cookies, headers){
@@ -60,11 +57,7 @@ module.exports = function(startURL, opts, parse, done){
                 if (baseURL && !/^http/i.test(url)) {
                     url = require('url').resolve(baseURL, url);
                 }
-                if (passed[url] !== true || baseURL === url || baseURL === null) {
-                    passed[url] = true;
-                    tasks.push(url);
-                    q[prior ? 'unshift' : 'push'](url);
-                }
+                q[prior ? 'unshift' : 'push'](url);
                 return true;
             }
             while(_push(url.shift())){}
@@ -80,18 +73,44 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
-    function objFromArray(arr){
-        var obj = {};
-        if (arr !== undefined){
-            for (var i = 0; i < arr.length; i++) {
-                obj[arr[i]] = true
+    function work(url, cb){
+        count++;
+        if (proxyArray && proxyRandom) {opts.proxy = getProxy(true);}
+        if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
+        if (saveOnCount && count % saveOnCount === 0) {save();}
+        needle.get(url, opts, function(err, res){
+            if (!err && res.statusCode === 200 && !q.paused) {
+                var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
+                var _ = {
+                    push: safePush(url),
+                    save: function(v){results.push(v);},
+                    step: log.step,
+                    log: log
+                }
+                if (asyncParse) {
+                    _.cb = function(){
+                        cb();
+                    };
+                    parse(url, $, _, res);
+                } else {
+                    parse(url, $, _, res);
+                    cb();
+                }
+            } else {
+                if (!q.paused) {
+                    q.pause();
+                    saveOnError && save();
+                    log.w('Paused!');
+                    setTimeout(start, delay);
+                }
+                log.e(url);
+                q[errorsFirst ? 'unshift' : 'push'](url);
+                // retry - cb(errorsFirst)
+                cb();
             }
-        }
-        return obj;
+        });
     }
 
-    var tasks = [];
-    var passed = objFromArray(opts.passed);
     var count = 0;
 
     if (typeof opts === 'function') {
@@ -115,7 +134,15 @@ module.exports = function(startURL, opts, parse, done){
     var cleanCookiesOnInit = opts.cleanCookiesOnInit || false;
     var cleanHeadersOnInit = opts.cleanHeadersOnInit || false;
 
-    var save = opts.save || function (tasks, results, passed){}
+    var save = (function(saveF){
+        return function(){
+            if(typeof saveF === 'function'){
+                q.save(function(tasks){
+                    saveF(tasks, results);
+                });
+            }
+        };
+    })(opts.save)
 
     var saveOnError = !(opts.saveOnError === false);
     var saveOnFinish = !(opts.saveOnFinish === false);
@@ -124,67 +151,39 @@ module.exports = function(startURL, opts, parse, done){
 
     var asyncParse = opts.asyncParse || false;
 
-    var results = opts.results || [];
-
-    opts = filterOpts(opts);
-
     var getProxy = proxyArray && getFromArray(proxyArray);
     var getAgent = agentArray && getFromArray(agentArray);
 
-    var q = tress(function(url, cb){
-        count++;
-        if (proxyArray && proxyRandom) {opts.proxy = getProxy(true);}
-        if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
-        if (saveOnCount && count % saveOnCount === 0) {
-            save(tasks, results, Object.keys(passed));
-        }
-        needle.get(url, opts, function(err, res){
-            if (!err && res.statusCode === 200 && !q.paused) {
-                var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
-                var _ = {
-                    push: safePush(url),
-                    save: function(v){results.push(v);},
-                    step: log.step,
-                    log: log
-                }
-                if (asyncParse) {
-                    _.cb = function(){
-                        tasks.splice(tasks.indexOf(url), 1);
-                        cb();
-                    };
-                    parse(url, $, _, res);
-                } else {
-                    parse(url, $, _, res);
-                    tasks.splice(tasks.indexOf(url), 1);
-                    cb();
-                }
-            } else {
-                if (!q.paused) {
-                    q.pause();
-                    saveOnError && save(tasks, results, Object.keys(passed));
-                    log.w('Paused!');
-                    setTimeout(start, delay);
-                }
-                log.e(url);
-                q[errorsFirst ? 'unshift' : 'push'](url);
-                cb();
-            }
-        });
-    }, concurrency);
+    var results = opts.results || [];
+
+    var q = tress(work, concurrency);
+
+    q.pause();
 
     q.drain = function(){
         log.finish();
-        saveOnFinish && save(tasks, results, Object.keys(passed));
+        saveOnFinish && save();
         if (done) {
             done(results);
         }
     };
 
+    log.start('%s results found', results.length);
+
+    if (opts.tasks) {
+        q.load(opts.tasks);
+    } else {
+        q.push(startURL);
+    }
+    // or q.load from file
+
+    opts = filterOpts(opts);
+
     start(true);
 
     onDeath(function() {
         log.finish();
-        saveOnExit && save(tasks, results, Object.keys(passed));
+        saveOnExit && save();
         process.exit();
     });
 };
