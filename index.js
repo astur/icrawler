@@ -78,7 +78,7 @@ module.exports = function(startURL, opts, parse, done){
                     log: log
                 }
                 if (asyncParse) {
-                    _.cb = cb();
+                    _.cb = cb;
                     parse(url, $, _, res);
                 } else {
                     parse(url, $, _, res);
