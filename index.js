@@ -105,9 +105,7 @@ module.exports = function(startURL, opts, parse, done){
                     setTimeout(start, delay);
                 }
                 log.e(url);
-                q[errorsFirst ? 'unshift' : 'push'](url);
-                // retry - cb(errorsFirst)
-                cb();
+                cb(errorsFirst);
             }
         });
     }
