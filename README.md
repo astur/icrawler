@@ -49,13 +49,14 @@ icrawler(startURL, opts, parse, done);
     - `initOnError` - if `true` run `init` on every resume after errors. If `false` run `init` only on start. If `init` is not set - `initOnError` option will be ignored. Defaults to `true`.
     - `cleanCookiesOnInit` - if `true` clean old cookies on `init` run. Defaults to `false`.
     - `cleanHeadersOnInit` - if `true` clean old headers on `init` run. Defaults to `false`.
-    - `save` - `function (tasks, results, passed)` for saving crawler state (tasks in queue, already prepared results and passed urls).
+    - `save` - `function (tasks, results)` for saving crawler state. `tasks` is object containing arrays `waiting`, `finished` and `failed` with tasks from queue. `results` is array of already fetched data. Ignored if `file` set.
+    - `results` - results saved by `save` for continue crawling after crash or manual break. Ignored if `file` set.
+    - `tasks` - tasks saved by `save` for continue crawling after crash or manual break. `tasks` is object containing arrays `waiting`, `finished` and `failed`. Ignored if `file` set.
+    - `file` - name of file for saving crawler state for continue crawling after crash or manual break. Use it instead `save`, `tasks` and `results` for auto saving.
     - `saveOnError` - if `true` runs `save` every time when paused on error.  Defaults to `true`.
     - `saveOnFinish` - if `true` runs `save` when crawling finished. Defaults to `true`.
     - `saveOnExit` - if `true` runs `save` when user abort script by `Ctrl+C`. Defaults to `true`.
     - `saveOnCount` - if number runs `save` every `saveOnCount` requests.
-    - `results` - results saved by `save` for continue crawling after crash or manual break.
-    - `passed` - array of urls, that can't be pushed to queue again (for duplicate avoiding).
     - `asyncParse` - if `true` - runs `parse` in asynchronous mode. Defaults to `false`.
 - **`parse`** - page-parsing `function(url, $, _, res)` , that runs for every crawled page and gets this params:
     - `url` - url of parsed page
