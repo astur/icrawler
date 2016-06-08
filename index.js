@@ -59,7 +59,7 @@ module.exports = function(startURL, opts, parse, done){
         if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
         if (saveOnCount && count % saveOnCount === 0) {save();}
         needle.get(url, opts, function(err, res){
-            if (!err && res.statusCode === 200 && !q.paused) {
+            if (!err && allowedStatuses.indexOf(res.statusCode) > -1 && !q.paused) {
                 var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
                 var _ = {
                     push: function(URL, prior){
@@ -108,6 +108,8 @@ module.exports = function(startURL, opts, parse, done){
     var delay = opts.delay || 10000;
     var errorsFirst = !!(opts.errorsFirst);
     var noJquery = opts.noJquery || false;
+
+    var allowedStatuses = opts.allowedStatuses ? [].concat(opts.allowedStatuses) : [200];
 
     var proxyArray = ({String: [opts.proxy], Array: opts.proxy})[Object.prototype.toString.call(opts.proxy).slice(8,-1)];
     var proxyRandom = !(opts.proxyRandom === false);
