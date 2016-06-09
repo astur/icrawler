@@ -116,7 +116,7 @@ module.exports = function(startURL, opts, parse, done){
     function work(url, cb){
         if (ctrlCPressed){
             log.finish();
-            log.i('Aborted by user. Data saved.')
+            log.i('Aborted by user.' + saveOnExit ? ' Data saved.' : '');
             saveOnExit && save();
             process.exit();
         }
