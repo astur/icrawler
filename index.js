@@ -116,6 +116,7 @@ module.exports = function(startURL, opts, parse, done){
     function work(url, cb){
         if (ctrlCPressed){
             log.finish();
+            log.i('Aborted by user. Data saved.')
             saveOnExit && save();
             process.exit();
         }
@@ -189,6 +190,7 @@ module.exports = function(startURL, opts, parse, done){
 
     q.drain = function(){
         log.finish();
+        log.i('Finished!')
         saveOnFinish && save();
         if (done) {
             done(results);
@@ -215,7 +217,7 @@ module.exports = function(startURL, opts, parse, done){
         ctrlCPressed = true;
         setTimeout(function(){
             log.finish();
-            log.e('UNSAFE FINISHED')
+            log.e('Aborted by user. Last data not saved.')
             process.exit();
         }, 1000);
     });
