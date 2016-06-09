@@ -100,14 +100,16 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
-    function onError(cb){
+    function onError(err, url, cb){
         if (!q.paused) {
             q.pause();
+            log.e(err, url);
             saveOnError && save();
-            log.w('Paused!');
+        }
+        if (q.running() === 1){
+            log.i('Paused!');
             setTimeout(start, delay);
         }
-        log.e(url);
         cb(errorsFirst);
     }
 
@@ -124,7 +126,7 @@ module.exports = function(startURL, opts, parse, done){
             if (!err && allowedStatuses.indexOf(res.statusCode) > -1 && !q.paused) {
                 onSuccess(url, res, cb);
             } else {
-                onError(cb);
+                onError(err || res.statusCode, url, cb);
             }
         });
     }
