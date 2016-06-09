@@ -9,11 +9,11 @@ var fs = require('fs');
 module.exports = function(startURL, opts, parse, done){
 
     function filterOpts(opts){
-        if (Object.prototype.toString.call(opts).slice(8,-1) !== 'Object') return {cookies: {}, headers: {}};
+        if (Object.prototype.toString.call(opts).slice(8,-1) !== 'Object') return {cookies: {}, headers: {}, read_timeout: 10000};
         var o = { cookies: opts.cookies || {}, headers: opts.headers || {} };
 
         if (opts.open_timeout || opts.timeout) {o.open_timeout = opts.open_timeout || opts.timeout;}
-        if (opts.read_timeout) {o.read_timeout = opts.read_timeout;}
+        o.read_timeout = opts.read_timeout || 10000;
         if (opts.connection) {o.connection = opts.connection;}
         if (opts.decode_response === false) {o.decode_response = false;}
 

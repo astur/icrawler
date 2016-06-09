@@ -38,7 +38,7 @@ icrawler(startURL, opts, parse, done);
     - `decode_response` - (or `decode`) Whether to decode the text responses to UTF-8, if Content-Type header shows a different charset. Defaults to true.
     - `noJquery` - if `true` send response body string to `parse` function (as `$` parameter) as is, without jQuery-like parsing. Defaults to `false`.
     - `open_timeout` (or `timeout`) - Returns error if connection takes longer than X milisecs to establish. Defaults to 10000 (10 secs). 0 means no timeout.
-    - `read_timeout` - Returns error if data transfer takes longer than X milisecs, after connection is established. Defaults to 0 (no timeout).
+    - `read_timeout` - Returns error if data transfer takes longer than X milisecs, after connection is established. Defaults to 10000 milisecs (not like in needle).
     - `proxy` - Forwards request through HTTP(s) proxy. Eg. `proxy: 'http://user:pass@proxy.server.com:3128'`. If array of strings - use proxies from list.
     - `proxyRandom` - if `true` use random proxy from list for every request; if `false` after each error use new proxy from list. Defaults to `true`. If `proxy` is not array - `proxyRandom` option will be ignored.
     - `headers` - Object containing custom HTTP headers for request. Overrides defaults described below.
