@@ -112,10 +112,14 @@ module.exports = function(startURL, opts, parse, done){
     }
 
     function work(url, cb){
-        count++;
+        if (ctrlCPressed){
+            log.finish();
+            saveOnExit && save();
+            process.exit();
+        }
         if (proxyArray && proxyRandom) {opts.proxy = getProxy(true);}
         if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
-        if (saveOnCount && count % saveOnCount === 0) {save();}
+        if (saveOnCount && count++ % saveOnCount === 0) {save();}
         needle.get(url, opts, function(err, res){
             if (!err && allowedStatuses.indexOf(res.statusCode) > -1 && !q.paused) {
                 onSuccess(url, res, cb);
@@ -126,6 +130,7 @@ module.exports = function(startURL, opts, parse, done){
     }
 
     var count = 0;
+    var ctrlCPressed = false;
 
     if (typeof opts === 'function') {
         done = parse;
@@ -205,8 +210,11 @@ module.exports = function(startURL, opts, parse, done){
     start(true);
 
     onDeath(function() {
-        log.finish();
-        saveOnExit && save();
-        process.exit();
+        ctrlCPressed = true;
+        setTimeout(function(){
+            log.finish();
+            log.e('UNSAFE FINISHED')
+            process.exit();
+        }, 1000);
     });
 };
