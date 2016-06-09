@@ -53,29 +53,49 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
+    function arrayResolve(arr, url){
+        for (var i = 0; i < arr.length; i++) if (!/^https?:/i.test(arr[i])) {
+            arr[i] = require('url').resolve(url, arr[i]);
+        }
+    }
+
     function onSuccess(url, res, cb){
+        var tasksForUnshift = [];
+        var tasksForPush = [];
+        var newResults = [];
         var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
         var _ = {
             push: function(URL, prior){
-                if(typeof URL === 'string'){
-                    URL = [URL];
+                if (prior) {
+                    tasksForUnshift.push(URL);
+                } else {
+                    tasksForPush.push(URL);
                 }
-                for (var i = 0; i < URL.length; i++) {
-                    if (!/^http/i.test(URL)) {
-                        URL[i] = require('url').resolve(url, URL[i]);
-                    }
-                    q[prior ? 'unshift' : 'push'](URL[i]);
-                };
             },
-            save: function(v){results.push(v);},
+            save: function(result){
+                newResults.push(result);
+            },
             step: log.step,
             log: log
         }
+        function onParse(){
+            arrayResolve(tasksForUnshift, url);
+            arrayResolve(tasksForPush, url);
+            q.unshift(tasksForUnshift);
+            q.push(tasksForPush);
+            while(newResults.length > 0){
+                results.push(newResults.shift());
+            }
+        }
         if (asyncParse) {
-            _.cb = cb;
+            _.cb = function(){
+                onParse();
+                cb.apply(null, arguments);
+            };
             parse(url, $, _, res);
         } else {
             parse(url, $, _, res);
+            onParse();
             cb();
         }
     }
