@@ -215,6 +215,7 @@ module.exports = function(startURL, opts, parse, done){
     } else if (opts.tasks) {
         q.load(opts.tasks);
     } else {
+        startURL = typeof startURL === 'string' ? [startURL] : startURL;
         q.push(arrayResolve(startURL));
     }
 
