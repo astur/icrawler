@@ -31,7 +31,7 @@ icrawler(startURL, opts, parse, done);
 
 - **`startURL`** - URL of page for start crawling (or array of URLs).
 - **`opts`** (optional) - options:
-    - `concurrency` - number of parallel requests. Defaults to 1. If `cookieSource` set - `concurrency` option will be ignored.
+    - `concurrency` - positive number of parallel requests or negative number of milisecs of delay between requests with no parallelism. Defaults to 1.
     - `delay` - time in milisecs to wait on error before try to crawle again. Defaults to 10000 (10 secs).
     - `errorsFirst` - if `true` failed requests will repeated before all others. if `false` - it will pushed in tail of queue. Defaults to `false`.
     - `allowedStatuses` - number or array of numbers of HTTP response codes that are not errors. Defaults to [200].
