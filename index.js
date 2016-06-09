@@ -54,9 +54,21 @@ module.exports = function(startURL, opts, parse, done){
     }
 
     function arrayResolve(arr, url){
-        for (var i = 0; i < arr.length; i++) if (!/^https?:/i.test(arr[i])) {
-            arr[i] = require('url').resolve(url, arr[i]);
+        var newArr = [];
+        for (var i = 0; i < arr.length; i++) {
+            if (url && !/^https?:/i.test(arr[i])) {
+                arr[i] = require('url').resolve(url, arr[i]);
+            }
+            if (!skipDuplicates ||
+                q.waiting.indexOf(arr[i]) === -1 &&
+                q.active.indexOf(arr[i]) === -1 &&
+                q.failed.indexOf(arr[i]) === -1 &&
+                q.finished.indexOf(arr[i]) === -1 &&
+                newArr.indexOf(arr[i]) === -1) {
+                    newArr.push(arr[i]);
+            }
         }
+        return newArr;
     }
 
     function onSuccess(url, res, cb){
@@ -79,10 +91,8 @@ module.exports = function(startURL, opts, parse, done){
             log: log
         }
         function onParse(){
-            arrayResolve(tasksForUnshift, url);
-            arrayResolve(tasksForPush, url);
-            q.unshift(tasksForUnshift);
-            q.push(tasksForPush);
+            q.unshift(arrayResolve(tasksForUnshift, url));
+            q.push(arrayResolve(tasksForPush, url));
             while(newResults.length > 0){
                 results.push(newResults.shift());
             }
@@ -144,6 +154,7 @@ module.exports = function(startURL, opts, parse, done){
     var delay = opts.delay || 10000;
     var errorsFirst = !!(opts.errorsFirst);
     var noJquery = opts.noJquery || false;
+    var skipDuplicates = !(opts.skipDuplicates === false);
 
     var allowedStatuses = opts.allowedStatuses ? [].concat(opts.allowedStatuses) : [200];
 
@@ -204,7 +215,7 @@ module.exports = function(startURL, opts, parse, done){
     } else if (opts.tasks) {
         q.load(opts.tasks);
     } else {
-        q.push(startURL);
+        q.push(arrayResolve(startURL));
     }
 
     log.start('%s results found', results.length);
