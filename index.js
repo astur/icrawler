@@ -53,6 +53,44 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
+    function onSuccess(url, res, cb){
+        var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
+        var _ = {
+            push: function(URL, prior){
+                if(typeof URL === 'string'){
+                    URL = [URL];
+                }
+                for (var i = 0; i < URL.length; i++) {
+                    if (!/^http/i.test(URL)) {
+                        URL[i] = require('url').resolve(url, URL[i]);
+                    }
+                    q[prior ? 'unshift' : 'push'](URL[i]);
+                };
+            },
+            save: function(v){results.push(v);},
+            step: log.step,
+            log: log
+        }
+        if (asyncParse) {
+            _.cb = cb;
+            parse(url, $, _, res);
+        } else {
+            parse(url, $, _, res);
+            cb();
+        }
+    }
+
+    function onError(cb){
+        if (!q.paused) {
+            q.pause();
+            saveOnError && save();
+            log.w('Paused!');
+            setTimeout(start, delay);
+        }
+        log.e(url);
+        cb(errorsFirst);
+    }
+
     function work(url, cb){
         count++;
         if (proxyArray && proxyRandom) {opts.proxy = getProxy(true);}
@@ -60,39 +98,9 @@ module.exports = function(startURL, opts, parse, done){
         if (saveOnCount && count % saveOnCount === 0) {save();}
         needle.get(url, opts, function(err, res){
             if (!err && allowedStatuses.indexOf(res.statusCode) > -1 && !q.paused) {
-                var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
-                var _ = {
-                    push: function(URL, prior){
-                        if(typeof URL === 'string'){
-                            URL = [URL];
-                        }
-                        for (var i = 0; i < URL.length; i++) {
-                            if (!/^http/i.test(URL)) {
-                                URL[i] = require('url').resolve(url, URL[i]);
-                            }
-                            q[prior ? 'unshift' : 'push'](URL[i]);
-                        };
-                    },
-                    save: function(v){results.push(v);},
-                    step: log.step,
-                    log: log
-                }
-                if (asyncParse) {
-                    _.cb = cb;
-                    parse(url, $, _, res);
-                } else {
-                    parse(url, $, _, res);
-                    cb();
-                }
+                onSuccess(url, res, cb);
             } else {
-                if (!q.paused) {
-                    q.pause();
-                    saveOnError && save();
-                    log.w('Paused!');
-                    setTimeout(start, delay);
-                }
-                log.e(url);
-                cb(errorsFirst);
+                onError(cb);
             }
         });
     }
