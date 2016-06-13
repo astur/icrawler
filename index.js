@@ -4,12 +4,17 @@ var tress = require('tress');
 var log = require('cllc')(module);
 var onDeath = require('death');
 var fs = require('fs');
+var resolve = require('url').resolve;
 
 
-module.exports = function(startURL, opts, parse, done){
+module.exports = function(startData, opts, parse, done){
+
+    function type(obj){
+        return Object.prototype.toString.call(obj).slice(8,-1);
+    }
 
     function filterOpts(opts){
-        if (Object.prototype.toString.call(opts).slice(8,-1) !== 'Object') return {cookies: {}, headers: {}, read_timeout: 10000};
+        if (type(opts) !== 'Object') return {cookies: {}, headers: {}, read_timeout: 10000};
         var o = { cookies: opts.cookies || {}, headers: opts.headers || {} };
 
         if (opts.open_timeout || opts.timeout) {o.open_timeout = opts.open_timeout || opts.timeout;}
@@ -53,19 +58,20 @@ module.exports = function(startURL, opts, parse, done){
         }
     }
 
-    function arrayResolve(arr, url){
+    function newTasksResolve(tasks, baseUrl){
+        type(tasks) !== 'Array' && (tasks = [tasks]);
         var newArr = [];
-        for (var i = 0; i < arr.length; i++) {
-            if (url && !/^https?:/i.test(arr[i])) {
-                arr[i] = require('url').resolve(url, arr[i]);
+        for (var i = 0; i < tasks.length; i++) {
+            if (baseUrl && !/^https?:/i.test(tasks[i])) {
+                tasks[i] = resolve(baseUrl, tasks[i]);
             }
-            if (!skipDuplicates ||
-                q.waiting.indexOf(arr[i]) === -1 &&
-                q.active.indexOf(arr[i]) === -1 &&
-                q.failed.indexOf(arr[i]) === -1 &&
-                q.finished.indexOf(arr[i]) === -1 &&
-                newArr.indexOf(arr[i]) === -1) {
-                    newArr.push(arr[i]);
+            if (!skipDuplicates  ||
+                q.waiting.indexOf(tasks[i]) === -1 &&
+                q.active.indexOf(tasks[i]) === -1 &&
+                q.failed.indexOf(tasks[i]) === -1 &&
+                q.finished.indexOf(tasks[i]) === -1 &&
+                newArr.indexOf(tasks[i]) === -1) {
+                    newArr.push(tasks[i]);
             }
         }
         return newArr;
@@ -77,11 +83,11 @@ module.exports = function(startURL, opts, parse, done){
         var newResults = [];
         var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
         var _ = {
-            push: function(URL, prior){
+            push: function(newTask, prior){
                 if (prior) {
-                    tasksForUnshift.push(URL);
+                    tasksForUnshift.push(newTask);
                 } else {
-                    tasksForPush.push(URL);
+                    tasksForPush.push(newTask);
                 }
             },
             save: function(result){
@@ -91,8 +97,8 @@ module.exports = function(startURL, opts, parse, done){
             log: log
         }
         function onParse(){
-            q.unshift(arrayResolve(tasksForUnshift, url));
-            q.push(arrayResolve(tasksForPush, url));
+            q.unshift(newTasksResolve(tasksForUnshift, url));
+            q.push(newTasksResolve(tasksForPush, url));
             while(newResults.length > 0){
                 results.push(newResults.shift());
             }
@@ -158,10 +164,10 @@ module.exports = function(startURL, opts, parse, done){
 
     var allowedStatuses = opts.allowedStatuses ? [].concat(opts.allowedStatuses) : [200];
 
-    var proxyArray = ({String: [opts.proxy], Array: opts.proxy})[Object.prototype.toString.call(opts.proxy).slice(8,-1)];
+    var proxyArray = ({String: [opts.proxy], Array: opts.proxy})[type(opts.proxy)];
     var proxyRandom = !(opts.proxyRandom === false);
 
-    var agentArray = ({String: [opts.user_agent], Array: opts.user_agent})[Object.prototype.toString.call(opts.user_agent).slice(8,-1)];
+    var agentArray = ({String: [opts.user_agent], Array: opts.user_agent})[type(opts.user_agent)];
     var agentRandom = !(opts.agentRandom === false);
 
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
@@ -215,8 +221,7 @@ module.exports = function(startURL, opts, parse, done){
     } else if (opts.tasks) {
         q.load(opts.tasks);
     } else {
-        startURL = typeof startURL === 'string' ? [startURL] : startURL;
-        q.push(arrayResolve(startURL));
+        q.push(newTasksResolve(startData));
     }
 
     log.start('%s results found', results.length);
