@@ -58,26 +58,36 @@ module.exports = function(startData, opts, parse, done){
         }
     }
 
+    function inArray(arr, item){
+        return !!arr.filter((v)=>{
+            return v.url === item.url;
+        }).length;
+    }
+
     function newTasksResolve(tasks, baseUrl){
         type(tasks) !== 'Array' && (tasks = [tasks]);
         var newArr = [];
         for (var i = 0; i < tasks.length; i++) {
-            if (baseUrl && !/^https?:/i.test(tasks[i])) {
-                tasks[i] = resolve(baseUrl, tasks[i]);
+            if(typeof tasks[i] === 'string'){
+                tasks[i] = {url: tasks[i]};
+            }
+
+            if (baseUrl && !/^https?:/i.test(tasks[i].url)) {
+                tasks[i].url = resolve(baseUrl, tasks[i].url);
             }
             if (!skipDuplicates  ||
-                q.waiting.indexOf(tasks[i]) === -1 &&
-                q.active.indexOf(tasks[i]) === -1 &&
-                q.failed.indexOf(tasks[i]) === -1 &&
-                q.finished.indexOf(tasks[i]) === -1 &&
-                newArr.indexOf(tasks[i]) === -1) {
+                !inArray(q.waiting, tasks[i]) &&
+                !inArray(q.active, tasks[i]) &&
+                !inArray(q.failed, tasks[i]) &&
+                !inArray(q.finished, tasks[i]) &&
+                !inArray(newArr, tasks[i])) {
                     newArr.push(tasks[i]);
             }
         }
         return newArr;
     }
 
-    function onSuccess(url, res, cb){
+    function onSuccess(task, res, cb){
         var tasksForUnshift = [];
         var tasksForPush = [];
         var newResults = [];
@@ -97,8 +107,8 @@ module.exports = function(startData, opts, parse, done){
             log: log
         }
         function onParse(){
-            q.unshift(newTasksResolve(tasksForUnshift, url));
-            q.push(newTasksResolve(tasksForPush, url));
+            q.unshift(newTasksResolve(tasksForUnshift, task.url));
+            q.push(newTasksResolve(tasksForPush, task.url));
             while(newResults.length > 0){
                 results.push(newResults.shift());
             }
@@ -108,18 +118,18 @@ module.exports = function(startData, opts, parse, done){
                 onParse();
                 cb.apply(null, arguments);
             };
-            parse(url, $, _, res);
+            parse(task, $, _, res);
         } else {
-            parse(url, $, _, res);
+            parse(task, $, _, res);
             onParse();
             cb();
         }
     }
 
-    function onError(err, url, cb){
+    function onError(err, task, cb){
         if (!q.paused) {
             q.pause();
-            log.e(err, url);
+            log.e(err, task.url);
             saveOnError && save();
         }
         if (q.running() === 1){
@@ -129,7 +139,7 @@ module.exports = function(startData, opts, parse, done){
         cb(errorsFirst);
     }
 
-    function work(url, cb){
+    function work(task, cb){
         if (ctrlCPressed){
             log.finish();
             log.i('Aborted by user.');
@@ -139,11 +149,11 @@ module.exports = function(startData, opts, parse, done){
         if (proxyArray && proxyRandom) {opts.proxy = getProxy(true);}
         if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
         if (saveOnCount && count++ % saveOnCount === 0) {save();}
-        needle.get(url, opts, function(err, res){
+        needle.get(task.url, opts, function(err, res){
             if (!err && allowedStatuses.indexOf(res.statusCode) > -1 && !q.paused) {
-                onSuccess(url, res, cb);
+                onSuccess(task, res, cb);
             } else {
-                onError(err || res.statusCode, url, cb);
+                onError(err || res.statusCode, task, cb);
             }
         });
     }
