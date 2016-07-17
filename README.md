@@ -15,7 +15,7 @@ Tool for easy scraping data from websites
 - HTTP headers and cookies setup
 - Automatic charset detection and conversion
 - Console progress indicator
-- node from 0.10 to 5.8 support
+- node from 0.10 to 6.0 support
 
 ## Install
 
@@ -26,10 +26,10 @@ npm install icrawler
 ## Usage
 
 ```js
-icrawler(startURL, opts, parse, done);
+icrawler(startData, opts, parse, done);
 ```
 
-- **`startURL`** - URL of page for start crawling (or array of URLs).
+- **`startData`** - task for start crawling (or array of tasks). Single icrawler task can be url (of page or API resource) or object with `url` field for url. Optionaly you can use `data` field with object for `POST` request (default method is `GET`). You can use any other fields for custom data. For example, you can mark different types of tasks for parsing different ways, or you can store in task partial data, when one result record needs more than one requests.
 - **`opts`** (optional) - options:
     - `concurrency` - positive number of parallel requests or negative number of milisecs of delay between requests with no parallelism. Defaults to 1.
     - `delay` - time in milisecs to wait on error before try to crawle again. Defaults to 10000 (10 secs).
@@ -82,7 +82,7 @@ var opts = {
     errorsFirst: true
 };
 
-icrawler(URL, opts, function(url, $, _){
+icrawler('http://example.com/', opts, function(url, $, _){
     if($('#next').length > 0){
         _.push($('.next').attr('href'));
         _.log('PAGE');

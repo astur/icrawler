@@ -149,7 +149,11 @@ module.exports = function(startData, opts, parse, done){
         if (proxyArray && proxyRandom) {opts.proxy = getProxy(true);}
         if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
         if (saveOnCount && count++ % saveOnCount === 0) {save();}
-        needle.get(task.url, opts, function(err, res){
+
+        var method = task.data ? 'POST' : 'GET';
+        var data = task.data || {};
+
+        needle.request(method, task.url, data, opts, function(err, res){
             if (!err && allowedStatuses.indexOf(res.statusCode) > -1 && !q.paused) {
                 onSuccess(task, res, cb);
             } else {
