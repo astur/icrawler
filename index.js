@@ -92,6 +92,13 @@ module.exports = function(startData, opts, parse, done){
         var tasksForPush = [];
         var newResults = [];
         var $ = (typeof res.body === 'string' && !noJquery) ? cheerio.load(res.body) : res.body;
+        function onParse(){
+            q.unshift(newTasksResolve(tasksForUnshift, task.url));
+            q.push(newTasksResolve(tasksForPush, task.url));
+            while(newResults.length > 0){
+                results.push(newResults.shift());
+            }
+        }
         var _ = {
             push: function(newTask, prior){
                 if (prior) {
@@ -100,17 +107,12 @@ module.exports = function(startData, opts, parse, done){
                     tasksForPush.push(newTask);
                 }
             },
-            save: function(result){
-                newResults.push(result);
-            },
             step: log.step,
             log: log
         }
-        function onParse(){
-            q.unshift(newTasksResolve(tasksForUnshift, task.url));
-            q.push(newTasksResolve(tasksForPush, task.url));
-            while(newResults.length > 0){
-                results.push(newResults.shift());
+        if (!noResults) {
+            _.save = function(result){
+                newResults.push(result);
             }
         }
         if (asyncParse) {
@@ -174,6 +176,7 @@ module.exports = function(startData, opts, parse, done){
     var delay = opts.delay || 10000;
     var errorsFirst = !!(opts.errorsFirst);
     var noJquery = opts.noJquery || false;
+    var noResults = opts.noResults || false;
     var skipDuplicates = !(opts.skipDuplicates === false);
 
     var allowedStatuses = opts.allowedStatuses ? [].concat(opts.allowedStatuses) : [200];
@@ -223,7 +226,7 @@ module.exports = function(startData, opts, parse, done){
         log.finish();
         log.i('Finished!')
         saveOnFinish && save();
-        if (done) {
+        if (done && !noResults) {
             done(results);
         }
     };
