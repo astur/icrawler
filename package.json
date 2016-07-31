@@ -1,6 +1,6 @@
 {
   "name": "icrawler",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "description": "Tool for easy scraping data from websites",
   "main": "index.js",
   "scripts": {
