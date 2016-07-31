@@ -152,16 +152,21 @@ module.exports = function(startData, opts, parse, done){
         if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
         if (saveOnCount && count++ % saveOnCount === 0) {save();}
 
-        var method = task.data ? 'POST' : 'GET';
         var data = task.data || {};
 
-        needle.request(method, task.url, data, opts, function(err, res){
+        function onRequest(err, res){
             if (!err && allowedStatuses.indexOf(res.statusCode) > -1 && !q.paused) {
                 onSuccess(task, res, cb);
             } else {
                 onError(err || res.statusCode, task, cb);
             }
-        });
+        }
+
+        if (task.data) {
+            needle.post(task.url, data, opts, onRequest);
+        } else {
+            needle.get(task.url, opts, onRequest);
+        }
     }
 
     var count = 0;
