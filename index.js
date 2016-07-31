@@ -88,6 +88,7 @@ module.exports = function(startData, opts, parse, done){
     }
 
     function onSuccess(task, res, cb){
+        var taskForParse = objectTaskParse ? task : task.url;
         var tasksForUnshift = [];
         var tasksForPush = [];
         var newResults = [];
@@ -120,9 +121,9 @@ module.exports = function(startData, opts, parse, done){
                 onParse();
                 cb.apply(null, arguments);
             };
-            parse(task, $, _, res);
+            parse(taskForParse, $, _, res);
         } else {
-            parse(task, $, _, res);
+            parse(taskForParse, $, _, res);
             onParse();
             cb();
         }
@@ -183,6 +184,7 @@ module.exports = function(startData, opts, parse, done){
     var noJquery = opts.noJquery || false;
     var noResults = opts.noResults || false;
     var skipDuplicates = !(opts.skipDuplicates === false);
+    var objectTaskParse = opts.objectTaskParse || false;
 
     var allowedStatuses = opts.allowedStatuses ? [].concat(opts.allowedStatuses) : [200];
 

@@ -36,6 +36,7 @@ icrawler(startData, opts, parse, done);
     - `errorsFirst` - if `true` failed requests will repeated before all others. if `false` - it will pushed in tail of queue. Defaults to `false`.
     - `allowedStatuses` - number or array of numbers of HTTP response codes that are not errors. Defaults to [200].
     - `skipDuplicates` - if `true` parse every URL only once. Defaults to `true`.
+    - `objectTaskParse` - if `true` task object will sent to `parse` instead url string. Defaults to `false`.
     - `decode_response` - (or `decode`) Whether to decode the text responses to UTF-8, if Content-Type header shows a different charset. Defaults to true.
     - `noJquery` - if `true` send response body string to `parse` function (as `$` parameter) as is, without jQuery-like parsing. Defaults to `false`.
     - `noResults` - if `true` don't save parsed items to results array (no `save` field in `_` parameter of `parse` function). Defaults to `false`.
@@ -61,11 +62,11 @@ icrawler(startData, opts, parse, done);
     - `saveOnExit` - if `true` runs `save` when user abort script by `Ctrl+C`. Defaults to `true`.
     - `saveOnCount` - if number runs `save` every `saveOnCount` requests.
     - `asyncParse` - if `true` - runs `parse` in asynchronous mode. Defaults to `false`.
-- **`parse`** - page-parsing `function(url, $, _, res)` , that runs for every crawled page and gets this params:
-    - `url` - url of parsed page
+- **`parse`** - page-parsing `function(task, $, _, res)` , that runs for every crawled page and gets this params:
+    - `task` - url of parsed page. If set `objectTaskParse` then `task` is object with `url` property.
     - `$` - jQuery-like (`cheerio` powered) object for html page or parsed object for `json` or raw response body if `noJquery` is `true`.
     - `_` - object with four functions:
-      - `_.push(url)` - adds new url (or array of urls) to crawler queue (will be parsed later)
+      - `_.push(task)` - adds new task (or array of tasks) to crawler queue (will be parsed later). Every task can be url string or object with `url` property.
       - `_.save(item)` - adds parsed item to results array
       - `_.step()` - increment indicator
       - `_.log(message /*, ... */)` - safe logging (use it instead `console.log`)
