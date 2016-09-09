@@ -32,7 +32,7 @@ module.exports = function(startData, opts, parse, done){
         if (isStart || initOnError) {
             init(needle, log, function(err, cookies, headers){
                 if(err){
-                    log.e('Init error: ' + err.message);
+                    !quiet && log.e('Init error: ' + err.message);
                     setTimeout(start, delay);
                 } else {
                     cleanCookiesOnInit && (opts.cookies = {});
@@ -40,12 +40,12 @@ module.exports = function(startData, opts, parse, done){
                     for(var key in cookies){opts.cookies[key] = cookies[key];}
                     for(var key in headers){opts.headers[key] = headers[key];}
                     q.resume();
-                    log.i(message);
+                    !quiet && log.i(message);
                 }
             });
         } else {
             q.resume();
-            log.i(message);
+            !quiet && log.i(message);
         }
     }
 
@@ -108,8 +108,10 @@ module.exports = function(startData, opts, parse, done){
                     tasksForPush.push(newTask);
                 }
             },
-            step: log.step,
-            log: log
+        }
+        if(!quiet){
+            _.step = log.step;
+            _.log = log;
         }
         if (!noResults) {
             _.save = function(result){
@@ -132,11 +134,11 @@ module.exports = function(startData, opts, parse, done){
     function onError(err, task, cb){
         if (!q.paused) {
             q.pause();
-            log.e(err, task.url);
+            !quiet && log.e(err, task.url);
             saveOnError && save();
         }
         if (q.running() === 1){
-            log.i('Paused!');
+            !quiet && log.i('Paused!');
             setTimeout(start, delay);
         }
         cb(errorsFirst);
@@ -144,8 +146,8 @@ module.exports = function(startData, opts, parse, done){
 
     function work(task, cb){
         if (ctrlCPressed){
-            log.finish();
-            log.i('Aborted by user.');
+            !quiet && log.finish();
+            !quiet && log.i('Aborted by user.');
             saveOnExit && save();
             process.exit();
         }
@@ -183,6 +185,7 @@ module.exports = function(startData, opts, parse, done){
     var errorsFirst = !!(opts.errorsFirst);
     var noJquery = opts.noJquery || false;
     var noResults = opts.noResults || false;
+    var quiet = opts.quiet || false;
     var skipDuplicates = !(opts.skipDuplicates === false);
     var objectTaskParse = opts.objectTaskParse || false;
 
@@ -230,8 +233,8 @@ module.exports = function(startData, opts, parse, done){
     q.pause();
 
     q.drain = function(){
-        log.finish();
-        log.i('Finished!')
+        !quiet && log.finish();
+        !quiet && log.i('Finished!')
         saveOnFinish && save();
         if (done && !noResults) {
             done(results);
@@ -248,7 +251,7 @@ module.exports = function(startData, opts, parse, done){
         q.push(newTasksResolve(startData));
     }
 
-    log.start('%s results found', results.length);
+    !quiet && log.start('%s results found', results.length);
 
     opts = filterOpts(opts);
 
@@ -257,8 +260,8 @@ module.exports = function(startData, opts, parse, done){
     onDeath(function() {
         ctrlCPressed = true;
         setTimeout(function(){
-            log.finish();
-            log.e('Aborted by user. Last data not saved.')
+            !quiet && log.finish();
+            !quiet && log.e('Aborted by user. Last data not saved.')
             process.exit();
         }, 1000);
     });
