@@ -159,9 +159,11 @@ module.exports = function(startData, opts, parse, done){
         if (saveOnCount && count++ % saveOnCount === 0) {save();}
 
         var data = task.data || {};
+        var startTime = Date.now();
 
         function onRequest(err, res){
             if (!err && allowedStatuses.indexOf(res.statusCode) > -1 && !q.paused) {
+                res.requestTime = Date.now() - startTime;
                 onSuccess(task, res, cb);
             } else {
                 onError(err || res.statusCode, task, cb);
