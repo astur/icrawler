@@ -136,6 +136,9 @@ module.exports = function(startData, opts, parse, done){
             q.pause();
             !quiet && log.e(err, task.url);
             saveOnError && save();
+            if(errorCallback){
+                errorCallback(err, task);
+            }
         }
         if (q.running() === 1){
             !quiet && log.i('Paused!');
@@ -196,6 +199,8 @@ module.exports = function(startData, opts, parse, done){
 
     var agentArray = ({String: [opts.user_agent], Array: opts.user_agent})[type(opts.user_agent)];
     var agentRandom = !(opts.agentRandom === false);
+
+    var errorCallback = opts.onError || false;
 
     var init = opts.init || function (needle, log, cb){process.nextTick(function(){cb(null, {}, {})});}
     var initOnError = !(opts.initOnError === false);
