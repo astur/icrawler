@@ -48,6 +48,7 @@ icrawler(startData, opts, parse, done);
     - `headers` - Object containing custom HTTP headers for request. Overrides defaults described below.
     - `cookies` - Sets a `{key: 'val'}` object as a 'Cookie' header.
     - `connection` - Sets 'Connection' HTTP header. Defaults to close.
+    - `compressed` - if true sets 'Accept-Encoding' HTTP header to 'gzip, deflate'. Defaults to `false`.
     - `user_agent` - Sets the 'User-Agent' HTTP header. If array of strings - use 'User-Agent' header from list. Defaults to Needle/{version} (Node.js {nodeVersion}).
     - `agentRandom` - if `true` use random 'User-Agent' from list for every request; if `false` after each error use new 'User-Agent' from list. Defaults to `true`. If `user_agent` is not array - `agentRandom` option will be ignored.
     - `onError` - `function (err, task)` for doing something on first error before pause.
