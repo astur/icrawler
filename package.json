@@ -1,6 +1,6 @@
 {
   "name": "icrawler",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "Tool for easy scraping data from websites",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "cheerio": "^0.20.0",
-    "cllc": "0.0.9",
+    "cllc": "0.0.10",
     "death": "^1.0.0",
     "needle": "^1.0.0",
     "tress": "^1.0.3"
