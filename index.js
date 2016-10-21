@@ -30,6 +30,7 @@ module.exports = function(startData, opts, parse, done){
     function start(isStart){
         var message = isStart ? 'Started!' : 'Resumed!';
         if (proxyArray && !proxyRandom) {opts.proxy = getProxy();}
+        if (reverseProxyArray && !reverseProxyRandom) {reverseProxy = getReverseProxy();}
         if (agentArray && !agentRandom) {opts.user_agent = getAgent();}
         if (isStart || initOnError) {
             init(needle, log, function(err, cookies, headers){
@@ -157,6 +158,7 @@ module.exports = function(startData, opts, parse, done){
             process.exit();
         }
         if (proxyArray && proxyRandom) {opts.proxy = getProxy(true);}
+        if (reverseProxyArray && reverseProxyRandom) {reverseProxy = getReverseProxy(true);}
         if (agentArray && agentRandom) {opts.user_agent = getAgent(true);}
         if (saveOnCount && count++ % saveOnCount === 0) {save();}
 
@@ -172,10 +174,17 @@ module.exports = function(startData, opts, parse, done){
             }
         }
 
+        var reqUrl = task.url;
+        if(typeof reverseProxy === 'string'){
+            reqUrl = reqUrl.replace(/^https?:\/\/[^/]+\//i, reverseProxy + '/');
+        } else if (reverseProxy && reverseProxy.from && reverseProxy.to){
+            reqUrl = reqUrl.replace(reverseProxy.to, reverseProxy.from);
+        }
+
         if (task.data) {
-            needle.post(task.url, data, opts, onRequest);
+            needle.post(reqUrl, data, opts, onRequest);
         } else {
-            needle.get(task.url, opts, onRequest);
+            needle.get(reqUrl, opts, onRequest);
         }
     }
 
@@ -200,6 +209,10 @@ module.exports = function(startData, opts, parse, done){
 
     var proxyArray = ({String: [opts.proxy], Array: opts.proxy})[type(opts.proxy)];
     var proxyRandom = !(opts.proxyRandom === false);
+
+    var reverseProxyArray = ({String: [opts.reverseProxy], Object: [opts.reverseProxy], Array: opts.reverseProxy})[type(opts.reverseProxy)];
+    var reverseProxyRandom = !(opts.reverseProxyRandom === false);
+    var reverseProxy = reverseProxyArray ? reverseProxyArray[0] : undefined;
 
     var agentArray = ({String: [opts.user_agent], Array: opts.user_agent})[type(opts.user_agent)];
     var agentRandom = !(opts.agentRandom === false);
@@ -233,6 +246,7 @@ module.exports = function(startData, opts, parse, done){
     var asyncParse = opts.asyncParse || false;
 
     var getProxy = proxyArray && getFromArray(proxyArray);
+    var getReverseProxy = reverseProxyArray && getFromArray(reverseProxyArray);
     var getAgent = agentArray && getFromArray(agentArray);
 
     var results = opts.results || [];
