@@ -21,6 +21,7 @@ module.exports = function(startData, opts, parse, done){
         o.read_timeout = opts.read_timeout || 10000;
         if (opts.connection) {o.connection = opts.connection;}
         if (opts.compressed) {o.compressed = opts.compressed;}
+        if (opts.agent) {o.agent = opts.agent;}
         if (opts.decode_response === false) {o.decode_response = false;}
 
         return o;
