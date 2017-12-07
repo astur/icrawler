@@ -105,10 +105,11 @@ module.exports = function(startData, opts, parse, done){
         }
         var _ = {
             push: function(newTask, prior){
+                type(newTask) !== 'Array' && (newTask = [newTask]);
                 if (prior) {
-                    tasksForUnshift.push(newTask);
+                    [].push.apply(tasksForUnshift, newTask);
                 } else {
-                    tasksForPush.push(newTask);
+                    [].push.apply(tasksForPush, newTask);
                 }
             },
         }
